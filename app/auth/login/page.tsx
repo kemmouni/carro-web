@@ -9,7 +9,8 @@ import { cn } from "@/lib/utils";
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const nextPath = searchParams.get("next");
+  const nextPath    = searchParams.get("next");
+  const registered  = searchParams.get("registered") === "1";
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw]     = useState(false);
@@ -66,6 +67,12 @@ function LoginForm() {
         {/* Card */}
         <div className="card p-7">
           <form onSubmit={handleSubmit} className="space-y-4">
+
+            {registered && (
+              <div className="px-4 py-3 rounded-xl bg-green-500/10 border border-green-500/20 text-[13px] text-green-400">
+                ✓ Account created successfully! Please sign in.
+              </div>
+            )}
 
             {error && (
               <div className="px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-[13px] text-red-400">

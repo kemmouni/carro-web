@@ -46,7 +46,15 @@ export default function RegisterPage() {
         return;
       }
 
-      router.push("/auth/login?registered=1");
+      // Auto-login succeeded — redirect directly based on role
+      if (json.autoLogin) {
+        const destination = json.data?.role === "SELLER" ? "/dashboard" : "/";
+        router.push(destination);
+        router.refresh();
+      } else {
+        // Fallback: send to login with success message
+        router.push("/auth/login?registered=1");
+      }
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {

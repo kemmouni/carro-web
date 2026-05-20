@@ -20,15 +20,20 @@ export async function POST(req: NextRequest) {
 
     const isSeller = role === "SELLER";
 
-    // 1. Create Supabase Auth user
-    const supabase = await createSupabaseServerClient();
-    const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
+    // 1. Create auth user via admin (email_confirm: true skips confirmation email)
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+    });
 
     if (authError || !authData.user) {
-      return NextResponse.json(
-        { success: false, error: authError?.message ?? "Registration failed" },
-        { status: 400 }
-      );
+      const msg = authError?.message ?? "Registration failed";
+      // Surface friendly messages for common errors
+      const friendly = msg.includes("already registered") || msg.includes("already been registered")
+        ? "An account with this email already exists."
+        : msg;
+      return NextResponse.json({ success: false, error: friendly }, { status: 400 });
     }
 
     const userId = authData.user.id;
@@ -42,37 +47,51 @@ export async function POST(req: NextRequest) {
     });
 
     if (userError) {
-      // Best-effort cleanup
       console.error("[register] user insert error:", userError);
+      // Clean up auth user so there's no orphan
+      await supabaseAdmin.auth.admin.deleteUser(userId);
       return NextResponse.json({ success: false, error: "Failed to create user profile" }, { status: 500 });
     }
 
     // 3. If seller, create a store
     if (isSeller) {
-      let slug = toSlug(name);
-      // Ensure slug uniqueness by appending a short random suffix
-      const suffix = Math.random().toString(36).slice(2, 7);
-      slug = `${slug}-${suffix}`;
-
+      const slug = `${toSlug(name)}-${Math.random().toString(36).slice(2, 6)}`;
       const { error: storeError } = await supabaseAdmin.from("stores").insert({
-        id:     crypto.randomUUID(),
+        id:      crypto.randomUUID(),
         userId,
         name,
         slug,
-        city:   "Doha",
+        city:    "Doha",
         country: "Qatar",
       });
-
-      if (storeError) {
-        console.error("[register] store insert error:", storeError);
-        // Non-fatal — user can set up store later
-      }
+      if (storeError) console.error("[register] store insert error:", storeError);
     }
 
-    return NextResponse.json(
-      { success: true, data: { id: userId, email, fullName: name, role: isSeller ? "SELLER" : "BUYER" } },
-      { status: 201 }
-    );
+    // 4. Auto sign-in so the user doesn't need to log in separately
+    const supabase = await createSupabaseServerClient();
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (signInError || !signInData.session) {
+      // Registration succeeded but auto-login failed — send to login page
+      return NextResponse.json({
+        success: true,
+        autoLogin: false,
+        data: { role: isSeller ? "SELLER" : "BUYER" },
+      }, { status: 201 });
+    }
+
+    return NextResponse.json({
+      success:   true,
+      autoLogin: true,
+      data: {
+        role:     isSeller ? "SELLER" : "BUYER",
+        fullName: name,
+      },
+    }, { status: 201 });
+
   } catch (err) {
     console.error("[POST /api/auth/register]", err);
     return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
