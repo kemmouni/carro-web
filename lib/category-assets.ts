@@ -2,25 +2,26 @@
  * Maps category slug keywords → Unsplash photo URL
  * Used as fallback when category.imageUrl is not set in the DB
  */
+// AI-generated images (gpt-image-1) stored locally in /public/images/
 export const CATEGORY_IMAGES: Record<string, string> = {
-  "engine":       "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&h=400&fit=crop&auto=format&q=80",
-  "drivetrain":   "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&h=400&fit=crop&auto=format&q=80",
-  "brake":        "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=400&fit=crop&auto=format&q=80",
-  "suspension":   "https://images.unsplash.com/photo-1615906655353-58b6aeebab6f?w=600&h=400&fit=crop&auto=format&q=80",
-  "electrical":   "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=600&h=400&fit=crop&auto=format&q=80",
-  "lighting":     "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=600&h=400&fit=crop&auto=format&q=80",
-  "ac":           "https://images.unsplash.com/photo-1563720223185-11003d516935?w=600&h=400&fit=crop&auto=format&q=80",
-  "heating":      "https://images.unsplash.com/photo-1563720223185-11003d516935?w=600&h=400&fit=crop&auto=format&q=80",
-  "filter":       "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=600&h=400&fit=crop&auto=format&q=80",
-  "fluid":        "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=600&h=400&fit=crop&auto=format&q=80",
-  "body":         "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&h=400&fit=crop&auto=format&q=80",
-  "exterior":     "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&h=400&fit=crop&auto=format&q=80",
-  "interior":     "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=600&h=400&fit=crop&auto=format&q=80",
-  "accessori":    "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=600&h=400&fit=crop&auto=format&q=80",
-  "wheel":        "https://images.unsplash.com/photo-1611143999486-a6fb95ddf9c3?w=600&h=400&fit=crop&auto=format&q=80",
-  "tire":         "https://images.unsplash.com/photo-1611143999486-a6fb95ddf9c3?w=600&h=400&fit=crop&auto=format&q=80",
-  "exhaust":      "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=600&h=400&fit=crop&auto=format&q=80",
-  "transmission": "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&h=400&fit=crop&auto=format&q=80",
+  "engine":       "/images/categories/engine.jpg",
+  "drivetrain":   "/images/categories/engine.jpg",
+  "transmission": "/images/categories/engine.jpg",
+  "brake":        "/images/categories/brakes.jpg",
+  "suspension":   "/images/categories/suspension.jpg",
+  "electrical":   "/images/categories/electrical.jpg",
+  "lighting":     "/images/categories/electrical.jpg",
+  "ac":           "/images/categories/ac.jpg",
+  "heating":      "/images/categories/ac.jpg",
+  "filter":       "/images/categories/filters.jpg",
+  "fluid":        "/images/categories/filters.jpg",
+  "body":         "/images/categories/body.jpg",
+  "exterior":     "/images/categories/body.jpg",
+  "interior":     "/images/categories/interior.jpg",
+  "accessori":    "/images/categories/interior.jpg",
+  "wheel":        "/images/categories/wheels.jpg",
+  "tire":         "/images/categories/wheels.jpg",
+  "exhaust":      "/images/categories/exhaust.jpg",
 };
 
 /** Returns the best matching image URL for a category slug */

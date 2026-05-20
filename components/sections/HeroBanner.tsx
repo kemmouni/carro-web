@@ -11,20 +11,19 @@ const SLIDES = [
     headline: ["FIND AUTO PARTS", "IN QATAR"],
     sub: "<strong class='text-brand-orange'>2,000+</strong> verified sellers. Quality parts. Best prices.",
     cta: { label: "Browse Parts", href: "/browse" },
-    // High-quality auto parts photo from Unsplash (engine bay / brake kit)
-    image: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=1200&h=720&fit=crop&auto=format&q=85",
+    image: "/images/hero-parts.jpg",
   },
   {
     headline: ["SELL YOUR", "AUTO PARTS"],
     sub: "Reach <strong class='text-brand-orange'>50,000+</strong> buyers across Qatar. List for free.",
     cta: { label: "Start Selling", href: "/seller/setup" },
-    image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&h=720&fit=crop&auto=format&q=85",
+    image: "/images/hero-sell.jpg",
   },
   {
     headline: ["QUALITY PARTS", "BEST PRICES"],
     sub: "Brakes, engines, suspension &amp; more — all in <strong class='text-brand-orange'>Qatar</strong>.",
     cta: { label: "Shop by Car", href: "/search" },
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&h=720&fit=crop&auto=format&q=85",
+    image: "/images/hero-brakes.jpg",
   },
 ];
 
