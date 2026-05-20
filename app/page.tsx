@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 import { HeroBanner }      from "@/components/sections/HeroBanner";
 import { QuickCategories } from "@/components/sections/QuickCategories";
@@ -7,8 +8,7 @@ import { RecentlyViewed }  from "@/components/sections/RecentlyViewed";
 import { ProductCard }     from "@/components/ui/ProductCard";
 import { BrandLogo }       from "@/components/ui/BrandLogo";
 import { supabaseAdmin }   from "@/lib/supabase";
-import { CAR_BRANDS }      from "@/lib/category-assets";
-import type { Product }    from "@/lib/types";
+import type { Product, Brand } from "@/lib/types";
 
 // ─── Helpers ─────────────────────────────────────────────
 function normalizeProduct(p: Record<string, unknown>): Product {
@@ -47,6 +47,16 @@ async function getNewArrivals(): Promise<Product[]> {
   return (data ?? []).map(normalizeProduct);
 }
 
+async function getPopularBrands(): Promise<Brand[]> {
+  const { data } = await supabaseAdmin
+    .from("brands")
+    .select("id, name, slug, logoUrl, country, isPopular, sortOrder, createdAt")
+    .eq("isPopular", true)
+    .order("sortOrder", { ascending: true })
+    .limit(16);
+  return (data ?? []) as Brand[];
+}
+
 
 // ─── Section wrapper ──────────────────────────────────────
 function Section({ title, href, children }: { title: string; href: string; children: React.ReactNode }) {
@@ -63,7 +73,7 @@ function Section({ title, href, children }: { title: string; href: string; child
 
 // ─── Page ─────────────────────────────────────────────────
 export default async function HomePage() {
-  const [featured, arrivals] = await Promise.all([getFeaturedProducts(), getNewArrivals()]);
+  const [featured, arrivals, popularBrands] = await Promise.all([getFeaturedProducts(), getNewArrivals(), getPopularBrands()]);
 
   return (
     <>
@@ -92,17 +102,28 @@ export default async function HomePage() {
         <section className="mb-12">
           <div className="flex items-center justify-between mb-5">
             <h2 className="section-title">Popular Brands</h2>
-            <Link href="/browse" className="orange-link text-[13px]">View all <ChevronRight size={14} /></Link>
+            <Link href="/search" className="orange-link text-[13px]">View all <ChevronRight size={14} /></Link>
           </div>
           <div className="flex gap-4 overflow-x-auto no-scrollbar pb-1">
-            {CAR_BRANDS.map((brand) => (
+            {popularBrands.map((brand) => (
               <Link
-                key={brand.name}
-                href={`/search?carMake=${encodeURIComponent(brand.make)}`}
+                key={brand.id}
+                href={`/search?carMake=${encodeURIComponent(brand.name)}`}
                 className="card flex flex-col items-center gap-3 px-6 py-5 min-w-[130px] flex-shrink-0 hover:border-brand-orange transition-all duration-200 group"
               >
-                <div className="h-10 flex items-center justify-center text-gray-400 group-hover:text-white transition-colors">
-                  <BrandLogo name={brand.name} size={44} />
+                <div className="h-10 w-[72px] flex items-center justify-center relative">
+                  {brand.logoUrl ? (
+                    <Image
+                      src={brand.logoUrl}
+                      alt={brand.name}
+                      fill
+                      className="object-contain filter brightness-75 group-hover:brightness-100 transition-all"
+                    />
+                  ) : (
+                    <div className="text-gray-400 group-hover:text-white transition-colors">
+                      <BrandLogo name={brand.name} size={44} />
+                    </div>
+                  )}
                 </div>
                 <span className="text-[11px] font-bold text-gray-500 group-hover:text-brand-orange tracking-wide uppercase transition-colors">
                   {brand.name}

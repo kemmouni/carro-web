@@ -83,6 +83,17 @@ export interface Review {
   createdAt: string;
 }
 
+export interface Brand {
+  id:          string;
+  name:        string;
+  slug:        string;
+  logoUrl?:    string;
+  country?:    string;
+  isPopular:   boolean;
+  sortOrder:   number;
+  createdAt:   string;
+}
+
 // ─── API response wrappers ────────────────────────────────
 export interface ApiResponse<T> {
   data:    T;
