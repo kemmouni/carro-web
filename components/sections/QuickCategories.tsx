@@ -1,15 +1,27 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import {
+  EngineIcon, BrakesIcon, SuspensionIcon, ElectricalIcon,
+  ACIcon, FilterIcon, BodyIcon, WheelsIcon, InteriorIcon,
+} from "@/components/ui/CategoryIcon";
+import type { JSX } from "react";
 
-const CATS = [
-  { label: "Engine",     icon: "⚙️",  href: "/browse/engine" },
-  { label: "Brakes",     icon: "🔴",  href: "/browse/brakes" },
-  { label: "Suspension", icon: "🔩",  href: "/browse/suspension" },
-  { label: "Electrical", icon: "⚡",  href: "/browse/electrical" },
-  { label: "AC",         icon: "❄️",  href: "/browse/ac-heating" },
-  { label: "Filters",    icon: "🌀",  href: "/browse/filters" },
-  { label: "Body",       icon: "🚗",  href: "/browse/body" },
-  { label: "Wheels",     icon: "🛞",  href: "/browse/wheels" },
+interface QuickCat {
+  label: string;
+  icon:  JSX.Element;
+  href:  string;
+}
+
+const CATS: QuickCat[] = [
+  { label: "Engine",     icon: <EngineIcon     size={26} />, href: "/search?q=engine"     },
+  { label: "Brakes",     icon: <BrakesIcon     size={26} />, href: "/search?q=brakes"     },
+  { label: "Suspension", icon: <SuspensionIcon size={26} />, href: "/search?q=suspension" },
+  { label: "Electrical", icon: <ElectricalIcon size={26} />, href: "/search?q=electrical" },
+  { label: "AC",         icon: <ACIcon         size={26} />, href: "/search?q=ac"         },
+  { label: "Filters",    icon: <FilterIcon     size={26} />, href: "/search?q=filter"     },
+  { label: "Body",       icon: <BodyIcon       size={26} />, href: "/search?q=body"       },
+  { label: "Wheels",     icon: <WheelsIcon     size={26} />, href: "/search?q=wheels"     },
+  { label: "Interior",   icon: <InteriorIcon   size={26} />, href: "/search?q=interior"   },
 ];
 
 export function QuickCategories() {
@@ -22,12 +34,14 @@ export function QuickCategories() {
               key={cat.href}
               href={cat.href}
               className={cn(
-                "flex flex-col items-center gap-2 px-5 py-4 flex-shrink-0 text-center",
-                "text-gray-300 hover:text-brand-orange hover:bg-brand-orange-light transition-colors duration-150 group"
+                "flex flex-col items-center gap-2.5 px-5 py-4 flex-shrink-0 text-center min-w-[80px]",
+                "text-gray-400 hover:text-brand-orange hover:bg-brand-orange-light transition-colors duration-150 group"
               )}
             >
-              <span className="text-2xl">{cat.icon}</span>
-              <span className="text-[12px] font-medium whitespace-nowrap">{cat.label}</span>
+              <span className="group-hover:scale-110 transition-transform duration-150">
+                {cat.icon}
+              </span>
+              <span className="text-[11px] font-semibold whitespace-nowrap">{cat.label}</span>
             </Link>
           ))}
         </div>

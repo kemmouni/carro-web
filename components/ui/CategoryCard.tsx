@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getCategoryImage } from "@/lib/category-assets";
 import type { Category } from "@/lib/types";
 
 interface CategoryCardProps {
@@ -10,46 +11,53 @@ interface CategoryCardProps {
 }
 
 export function CategoryCard({ category, className }: CategoryCardProps) {
+  const imageUrl = category.imageUrl || getCategoryImage(category.slug) || getCategoryImage(category.name);
+
   return (
     <Link
-      href={`/browse/${category.slug}`}
+      href={`/search?category=${category.slug}`}
       className={cn(
-        "card group p-5 flex flex-col relative overflow-hidden transition-all duration-200",
-        "hover:border-brand-orange hover:-translate-y-1 hover:shadow-orange",
+        "group relative overflow-hidden rounded-2xl border border-dark-border bg-dark-secondary",
+        "hover:border-brand-orange transition-all duration-300",
         className
       )}
     >
-      {/* Bottom accent line on hover */}
-      <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-brand-orange scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left" />
-
-      {/* Image */}
-      <div className="h-[130px] flex items-center justify-center mb-4">
-        {category.imageUrl ? (
-          <Image
-            src={category.imageUrl}
-            alt={category.name}
-            width={160}
-            height={120}
-            className="object-contain drop-shadow-[0_6px_14px_rgba(0,0,0,0.6)] transition-transform duration-200 group-hover:scale-105"
-          />
+      {/* Background image */}
+      <div className="relative h-[160px] overflow-hidden">
+        {imageUrl ? (
+          <>
+            <Image
+              src={imageUrl}
+              alt={category.name}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-110 brightness-75"
+              sizes="(max-width:640px) 50vw, (max-width:1024px) 33vw, 25vw"
+            />
+            {/* Gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          </>
         ) : (
-          <div className="w-24 h-24 bg-dark-secondary rounded-full flex items-center justify-center text-3xl">🔧</div>
+          <div className="w-full h-full flex items-center justify-center bg-dark-card">
+            <div className="text-4xl opacity-30">🔧</div>
+          </div>
         )}
+
+        {/* Count badge */}
+        <div className="absolute top-3 right-3 px-2 py-1 rounded-full bg-black/50 backdrop-blur-sm text-[10px] font-bold text-white">
+          {(category._count?.products ?? 0).toLocaleString()} parts
+        </div>
       </div>
 
       {/* Footer */}
-      <div className="flex items-end justify-between">
-        <div>
-          <h3 className="text-[15px] font-bold text-white mb-1">{category.name}</h3>
-          <p className="text-[12px] text-gray-400">
-            {category._count?.products?.toLocaleString() ?? 0} parts available
-          </p>
-        </div>
+      <div className="flex items-center justify-between px-4 py-3.5">
+        <h3 className="text-[14px] font-bold text-white group-hover:text-brand-orange transition-colors">
+          {category.name}
+        </h3>
         <div className={cn(
-          "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200",
+          "w-7 h-7 rounded-full flex items-center justify-center transition-all duration-200 flex-shrink-0",
           "bg-brand-orange-light text-brand-orange group-hover:bg-brand-orange group-hover:text-white"
         )}>
-          <ArrowRight size={14} />
+          <ArrowRight size={13} />
         </div>
       </div>
     </Link>

@@ -34,6 +34,9 @@ export function slugify(str: string) {
   return str.toLowerCase().replace(/\s+/g, "-").replace(/[^\w-]/g, "");
 }
 
+// A clean grey placeholder that doesn't 404
+export const PLACEHOLDER_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' fill='none'%3E%3Crect width='400' height='300' fill='%23222'/%3E%3Cpath d='M175 130h50v40h-50z' fill='%23444'/%3E%3Ccircle cx='200' cy='115' r='18' fill='%23444'/%3E%3C/svg%3E";
+
 export function primaryImage(images: { url: string; isPrimary: boolean }[]) {
-  return images.find((i) => i.isPrimary)?.url ?? images[0]?.url ?? "/images/placeholder.jpg";
+  return images.find((i) => i.isPrimary)?.url ?? images[0]?.url ?? PLACEHOLDER_IMG;
 }

@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart, MapPin } from "lucide-react";
 import { useState } from "react";
-import { cn, formatPrice, primaryImage, timeAgo } from "@/lib/utils";
+import { cn, formatPrice, primaryImage, PLACEHOLDER_IMG, timeAgo } from "@/lib/utils";
 import { ConditionBadge } from "./Badge";
 import { StarRating } from "./StarRating";
 import type { Product } from "@/lib/types";

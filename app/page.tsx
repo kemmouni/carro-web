@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { HeroBanner }       from "@/components/sections/HeroBanner";
-import { QuickCategories }  from "@/components/sections/QuickCategories";
-import { TrustBadges }      from "@/components/sections/TrustBadges";
-import { RecentlyViewed }   from "@/components/sections/RecentlyViewed";
+import { HeroBanner }      from "@/components/sections/HeroBanner";
+import { QuickCategories } from "@/components/sections/QuickCategories";
+import { TrustBadges }     from "@/components/sections/TrustBadges";
+import { RecentlyViewed }  from "@/components/sections/RecentlyViewed";
 import { ProductCard }     from "@/components/ui/ProductCard";
+import { BrandLogo }       from "@/components/ui/BrandLogo";
 import { supabaseAdmin }   from "@/lib/supabase";
-import type { Product } from "@/lib/types";
+import { CAR_BRANDS }      from "@/lib/category-assets";
+import type { Product }    from "@/lib/types";
 
 // ─── Helpers ─────────────────────────────────────────────
 function normalizeProduct(p: Record<string, unknown>): Product {
@@ -45,7 +47,6 @@ async function getNewArrivals(): Promise<Product[]> {
   return (data ?? []).map(normalizeProduct);
 }
 
-const BRANDS = ["TOYOTA","NISSAN","BMW","Mercedes-Benz","LEXUS","HONDA","KIA"];
 
 // ─── Section wrapper ──────────────────────────────────────
 function Section({ title, href, children }: { title: string; href: string; children: React.ReactNode }) {
@@ -87,16 +88,25 @@ export default async function HomePage() {
           </div>
         </Section>
 
+        {/* Popular Brands */}
         <section className="mb-12">
-          <h2 className="section-title mb-5">Popular Brands</h2>
-          <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
-            {BRANDS.map((brand) => (
-              <Link key={brand} href={`/search?carMake=${encodeURIComponent(brand)}`}
-                className="card flex items-center gap-3 px-6 py-4 min-w-[160px] flex-shrink-0 hover:border-brand-orange transition-colors group">
-                <div className="w-8 h-8 flex items-center justify-center opacity-70 group-hover:opacity-100 transition-opacity">
-                  <span className="text-[18px] font-black text-brand-orange">{brand[0]}</span>
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="section-title">Popular Brands</h2>
+            <Link href="/browse" className="orange-link text-[13px]">View all <ChevronRight size={14} /></Link>
+          </div>
+          <div className="flex gap-4 overflow-x-auto no-scrollbar pb-1">
+            {CAR_BRANDS.map((brand) => (
+              <Link
+                key={brand.name}
+                href={`/search?carMake=${encodeURIComponent(brand.make)}`}
+                className="card flex flex-col items-center gap-3 px-6 py-5 min-w-[130px] flex-shrink-0 hover:border-brand-orange transition-all duration-200 group"
+              >
+                <div className="h-10 flex items-center justify-center text-gray-400 group-hover:text-white transition-colors">
+                  <BrandLogo name={brand.name} size={44} />
                 </div>
-                <span className="text-[13px] font-bold text-white">{brand}</span>
+                <span className="text-[11px] font-bold text-gray-500 group-hover:text-brand-orange tracking-wide uppercase transition-colors">
+                  {brand.name}
+                </span>
               </Link>
             ))}
           </div>
