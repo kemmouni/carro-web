@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { supabaseAdmin } from "@/lib/supabase";
 
 export async function GET(req: NextRequest) {
   try {
@@ -9,25 +9,32 @@ export async function GET(req: NextRequest) {
     const q     = searchParams.get("q");
     const city  = searchParams.get("city");
 
-    const where: Record<string, unknown> = {};
-    if (q)    where.name = { contains: q, mode: "insensitive" };
-    if (city) where.city = { equals: city, mode: "insensitive" };
+    let query = supabaseAdmin
+      .from("stores")
+      .select("*, products:products(id), reviews:reviews(id)", { count: "exact" })
+      .order("createdAt", { ascending: false })
+      .range((page - 1) * limit, page * limit - 1);
 
-    const [total, stores] = await Promise.all([
-      prisma.store.count({ where }),
-      prisma.store.findMany({
-        where,
-        orderBy: { avgRating: "desc" },
-        skip: (page - 1) * limit,
-        take: limit,
-        include: { _count: { select: { products: true, reviews: true } } },
-      }),
-    ]);
+    if (q)    query = query.ilike("name", `%${q}%`);
+    if (city) query = query.ilike("city", city);
+
+    const { data, count, error } = await query;
+    if (error) throw error;
+
+    const stores = (data ?? []).map((s: Record<string, unknown>) => ({
+      ...s,
+      _count: {
+        products: Array.isArray(s.products) ? (s.products as unknown[]).length : 0,
+        reviews:  Array.isArray(s.reviews)  ? (s.reviews  as unknown[]).length : 0,
+      },
+      products: undefined,
+      reviews:  undefined,
+    }));
 
     return NextResponse.json({
       success: true,
       data: stores,
-      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+      pagination: { page, limit, total: count ?? 0, pages: Math.ceil((count ?? 0) / limit) },
     });
   } catch (err) {
     console.error("[GET /api/stores]", err);
