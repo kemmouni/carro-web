@@ -1,0 +1,215 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── Users (mirrors Supabase auth.users) ─────────────────
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  fullName  String?
+  phone     String?
+  avatarUrl String?
+  role      UserRole @default(BUYER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  store     Store?
+  wishlist  Wishlist[]
+  reviews   Review[]
+  orders    Order[]
+  messages  Message[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  BUYER
+  SELLER
+  ADMIN
+}
+
+// ─── Stores ───────────────────────────────────────────────
+model Store {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  slug         String   @unique
+  description  String?
+  logoUrl      String?
+  coverUrl     String?
+  phone        String?
+  email        String?
+  website      String?
+  address      String?
+  city         String   @default("Doha")
+  country      String   @default("Qatar")
+  lat          Float?
+  lng          Float?
+  workingHours String?
+  isVerified   Boolean  @default(false)
+  responseRate Float    @default(0)
+  totalSales   Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  products Product[]
+  reviews  Review[]
+  messages Message[]
+
+  @@map("stores")
+}
+
+// ─── Categories ───────────────────────────────────────────
+model Category {
+  id          String     @id @default(uuid())
+  name        String
+  slug        String     @unique
+  imageUrl    String?
+  description String?
+  parentId    String?
+  parent      Category?  @relation("SubCategories", fields: [parentId], references: [id])
+  children    Category[] @relation("SubCategories")
+  products    Product[]
+  sortOrder   Int        @default(0)
+
+  @@map("categories")
+}
+
+// ─── Products (Listings) ──────────────────────────────────
+model Product {
+  id            String        @id @default(uuid())
+  storeId       String
+  store         Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  categoryId    String
+  category      Category      @relation(fields: [categoryId], references: [id])
+  title         String
+  slug          String        @unique
+  description   String?
+  price         Float
+  originalPrice Float?
+  currency      String        @default("QAR")
+  condition     Condition
+  partNumber    String?
+  brand         String?
+  carMake       String?
+  carModel      String?
+  carYear       Int?
+  carYearTo     Int?
+  images        ProductImage[]
+  isActive      Boolean       @default(true)
+  isFeatured    Boolean       @default(false)
+  viewCount     Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  wishlist  Wishlist[]
+  orderItems OrderItem[]
+
+  @@index([storeId])
+  @@index([categoryId])
+  @@index([carMake, carModel])
+  @@map("products")
+}
+
+enum Condition {
+  NEW
+  LIKE_NEW
+  USED
+}
+
+model ProductImage {
+  id        String  @id @default(uuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  altText   String?
+  isPrimary Boolean @default(false)
+  sortOrder Int     @default(0)
+
+  @@map("product_images")
+}
+
+// ─── Reviews ──────────────────────────────────────────────
+model Review {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id])
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+
+  @@unique([userId, storeId])
+  @@map("reviews")
+}
+
+// ─── Wishlist ─────────────────────────────────────────────
+model Wishlist {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+  @@map("wishlists")
+}
+
+// ─── Orders ───────────────────────────────────────────────
+model Order {
+  id          String      @id @default(uuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  status      OrderStatus @default(PENDING)
+  total       Float
+  currency    String      @default("QAR")
+  items       OrderItem[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("orders")
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Float
+
+  @@map("order_items")
+}
+
+// ─── Messages ─────────────────────────────────────────────
+model Message {
+  id        String   @id @default(uuid())
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id])
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id])
+  body      String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([senderId, storeId])
+  @@map("messages")
+}
