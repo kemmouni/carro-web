@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getCategoryImage } from "@/lib/category-assets";
 import type { Category } from "@/lib/types";
 
 interface CategoryCardProps {
@@ -11,7 +10,8 @@ interface CategoryCardProps {
 }
 
 export function CategoryCard({ category, className }: CategoryCardProps) {
-  const imageUrl = category.imageUrl || getCategoryImage(category.slug) || getCategoryImage(category.name);
+  // Only use imageUrl from DB — no broken local file fallback
+  const imageUrl = category.imageUrl ?? null;
 
   return (
     <Link

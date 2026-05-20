@@ -1,23 +1,27 @@
 import Link from "next/link";
+import Image from "next/image";
 import { supabaseAdmin } from "@/lib/supabase";
 import { CategoryCard } from "@/components/ui/CategoryCard";
 import { BrandLogo }    from "@/components/ui/BrandLogo";
-import { CAR_BRANDS }   from "@/lib/category-assets";
-import type { Category } from "@/lib/types";
+import type { Category, Brand } from "@/lib/types";
+
+export const dynamic = "force-dynamic"; // always fetch fresh data
 
 export const metadata = { title: "Browse Parts — Carro Qatar" };
 
 export default async function BrowsePage() {
-  const { data: cats } = await supabaseAdmin
-    .from("categories")
-    .select(`*, products:products(id)`)
-    .order("sortOrder");
+  const [{ data: cats }, { data: brandsData }] = await Promise.all([
+    supabaseAdmin.from("categories").select(`*, products:products(id)`).order("sortOrder"),
+    supabaseAdmin.from("brands").select("id,name,slug,logoUrl,country,isPopular,sortOrder,createdAt").eq("isPopular", true).order("sortOrder").limit(20),
+  ]);
 
   const categories: Category[] = (cats ?? []).map((c: Record<string, unknown>) => ({
     ...(c as Category),
     _count: { products: Array.isArray(c.products) ? (c.products as unknown[]).length : 0 },
     products: undefined,
   }));
+
+  const brands: Brand[] = (brandsData ?? []) as Brand[];
 
   return (
     <div className="bg-dark-primary min-h-screen">
@@ -54,14 +58,25 @@ export default async function BrowsePage() {
             <Link href="/search" className="orange-link text-[13px]">View all brands →</Link>
           </div>
           <div className="grid grid-cols-3 sm:grid-cols-5 gap-4">
-            {CAR_BRANDS.slice(0, 10).map((brand) => (
+            {brands.map((brand) => (
               <Link
-                key={brand.name}
-                href={`/search?carMake=${encodeURIComponent(brand.make)}`}
+                key={brand.id}
+                href={`/search?carMake=${encodeURIComponent(brand.name)}`}
                 className="card py-6 flex flex-col items-center gap-3 hover:border-brand-orange transition-all duration-200 group"
               >
-                <div className="h-10 flex items-center justify-center text-gray-400 group-hover:text-white transition-colors">
-                  <BrandLogo name={brand.name} size={42} />
+                <div className="h-10 w-[64px] relative flex items-center justify-center">
+                  {brand.logoUrl ? (
+                    <Image
+                      src={brand.logoUrl}
+                      alt={brand.name}
+                      fill
+                      className="object-contain filter brightness-75 group-hover:brightness-100 transition-all"
+                    />
+                  ) : (
+                    <div className="text-gray-400 group-hover:text-white transition-colors">
+                      <BrandLogo name={brand.name} size={42} />
+                    </div>
+                  )}
                 </div>
                 <span className="text-[11px] font-bold text-gray-500 group-hover:text-brand-orange transition-colors tracking-wide text-center uppercase">
                   {brand.name}

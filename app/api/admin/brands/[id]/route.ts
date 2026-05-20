@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { supabaseAdmin } from "@/lib/supabase";
 import { createSupabaseServerClient } from "@/lib/supabase";
 
@@ -32,6 +33,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       .single();
 
     if (error) throw error;
+    revalidatePath("/browse");
+    revalidatePath("/");
     return NextResponse.json({ success: true, data });
   } catch (err) {
     console.error("[PUT /api/admin/brands/[id]]", err);
