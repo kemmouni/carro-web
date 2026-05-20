@@ -12,6 +12,9 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     typedRoutes: true,
+    serverActions: {
+      bodySizeLimit: "10mb",
+    },
   },
   typescript: {
     // Pre-existing RouteImpl / Prisma type errors — will be cleaned up post-launch

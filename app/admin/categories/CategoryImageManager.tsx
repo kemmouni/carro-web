@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import Image from "next/image";
 import { Camera, Check, Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { compressImage } from "@/lib/compress-image";
 
 interface Category {
   id: string;
@@ -32,9 +33,12 @@ export default function CategoryImageManager({ categories }: { categories: Categ
     setSuccess(null);
 
     try {
-      // 1. Upload image
+      // 1. Compress image client-side (keeps it under 1 MB)
+      const compressed = await compressImage(file, 1200, 900, 0.82);
+
+      // 2. Upload image
       const form = new FormData();
-      form.append("file", file);
+      form.append("file", compressed);
       form.append("folder", "categories");
       const uploadRes = await fetch("/api/admin/upload", { method: "POST", body: form });
       const uploadJson = await uploadRes.json();

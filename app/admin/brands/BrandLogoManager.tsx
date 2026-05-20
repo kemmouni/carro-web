@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import Image from "next/image";
 import { Camera, Check, Loader2, X, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { compressImage } from "@/lib/compress-image";
 
 interface Brand {
   id: string;
@@ -40,8 +41,11 @@ export default function BrandLogoManager({ brands }: { brands: Brand[] }) {
     setSuccess(null);
 
     try {
+      // Compress client-side before upload (logos: max 600×400)
+      const compressed = await compressImage(file, 600, 400, 0.88);
+
       const form = new FormData();
-      form.append("file", file);
+      form.append("file", compressed);
       form.append("folder", "brands");
       const uploadRes = await fetch("/api/admin/upload", { method: "POST", body: form });
       const uploadJson = await uploadRes.json();
