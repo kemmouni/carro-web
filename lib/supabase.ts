@@ -2,8 +2,13 @@ import { createClient } from "@supabase/supabase-js";
 import { createBrowserClient, createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-const supabaseUrl  = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+// Strip BOM (U+FEFF) and whitespace that can sneak in when copying keys
+function cleanEnv(value: string | undefined): string {
+  return (value ?? "").replace(/^﻿/, "").trim();
+}
+
+const supabaseUrl  = cleanEnv(process.env.NEXT_PUBLIC_SUPABASE_URL);
+const supabaseAnon = cleanEnv(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
 // ── Browser client (use in Client Components) ─────────────
 export const createSupabaseBrowserClient = () =>
@@ -26,6 +31,6 @@ export const createSupabaseServerClient = async () => {
 // ── Admin client (server-only, bypasses RLS) ─────────────
 export const supabaseAdmin = createClient(
   supabaseUrl,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  cleanEnv(process.env.SUPABASE_SERVICE_ROLE_KEY),
   { auth: { autoRefreshToken: false, persistSession: false } }
 );
