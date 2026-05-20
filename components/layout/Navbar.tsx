@@ -4,26 +4,46 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import {
-  Search, ShoppingCart, Heart, User, ChevronDown,
+  Search, Heart, User, ChevronDown,
   MapPin, Menu, X, LogOut, Settings, Package,
+  Store, LayoutDashboard, PlusCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
-  { href: "/browse",  label: "Browse" },
-  { href: "/search",  label: "Shop by Car" },
-  { href: "/search?sort=deals", label: "Deals" },
-  { href: "/brands",  label: "Brands" },
-  { href: "/services",label: "Services" },
+  { href: "/browse",            label: "Browse"  },
+  { href: "/search",            label: "Search"  },
+  { href: "/search?sort=deals", label: "Deals"   },
 ];
+
+interface SessionUser {
+  id:        string;
+  email:     string;
+  fullName:  string | null;
+  role:      string;
+  storeId:   string | null;
+  storeSlug: string | null;
+  storeName: string | null;
+}
 
 export function Navbar() {
   const router   = useRouter();
   const pathname = usePathname();
-  const [query, setQuery]   = useState("");
+  const [query, setQuery]     = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
+
+  // Auth state
+  const [user,       setUser]       = useState<SessionUser | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetch("/api/auth/session")
+      .then((r) => r.json())
+      .then((j) => { if (j.success) setUser(j.data); })
+      .finally(() => setAuthLoading(false));
+  }, []);
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -38,6 +58,16 @@ export function Navbar() {
     e.preventDefault();
     if (query.trim()) router.push(`/search?q=${encodeURIComponent(query.trim())}`);
   }
+
+  async function handleLogout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    setUser(null);
+    router.push("/");
+    router.refresh();
+  }
+
+  const displayName = user?.fullName || user?.email?.split("@")[0] || "Account";
+  const isSeller    = user?.role === "SELLER" || !!user?.storeId;
 
   return (
     <header className="sticky top-0 z-50 bg-[#111] border-b border-dark-border">
@@ -56,9 +86,9 @@ export function Navbar() {
               key={l.href}
               href={l.href}
               className={cn(
-                "text-[13px] font-medium px-3 py-1.5 rounded-lg transition-colors duration-150 relative",
+                "text-[13px] font-medium px-3 py-1.5 rounded-lg transition-colors duration-150",
                 pathname === l.href
-                  ? "text-brand-orange after:absolute after:bottom-[-22px] after:left-0 after:right-0 after:h-[2px] after:bg-brand-orange"
+                  ? "text-brand-orange"
                   : "text-gray-300 hover:text-white"
               )}
             >
@@ -87,76 +117,130 @@ export function Navbar() {
         {/* Right actions */}
         <div className="flex items-center gap-2 ml-auto lg:ml-0">
 
-          {/* Location picker */}
+          {/* Location */}
           <button className="hidden md:flex items-center gap-1.5 h-9 px-3 border border-dark-border rounded-lg text-[13px] font-medium text-white hover:border-brand-orange transition-colors">
             <MapPin size={13} className="text-brand-orange" />
-            Doha, Qatar
+            Doha
             <ChevronDown size={12} className="text-gray-400" />
           </button>
 
+          {/* Sell button — show for buyers/guests */}
+          {!authLoading && !isSeller && (
+            <Link
+              href={user ? "/seller/setup" : "/auth/register"}
+              className="hidden md:flex h-9 px-4 items-center gap-1.5 bg-brand-orange-light border border-brand-orange/40 text-brand-orange text-[13px] font-semibold rounded-lg hover:bg-brand-orange hover:text-white transition-colors"
+            >
+              <Store size={14} />
+              Sell
+            </Link>
+          )}
+
           {/* Wishlist */}
-          <Link href="/wishlist" className="relative w-9 h-9 flex items-center justify-center rounded-lg text-gray-300 hover:text-white hover:bg-dark-secondary transition-colors">
+          <Link
+            href="/wishlist"
+            className="relative w-9 h-9 flex items-center justify-center rounded-lg text-gray-300 hover:text-white hover:bg-dark-secondary transition-colors"
+          >
             <Heart size={18} />
           </Link>
 
-          {/* Cart */}
-          <Link href="/cart" className="relative w-9 h-9 flex items-center justify-center rounded-lg text-gray-300 hover:text-white hover:bg-dark-secondary transition-colors">
-            <ShoppingCart size={18} />
-            <span className="absolute top-1 right-1 w-4 h-4 bg-brand-orange rounded-full text-[9px] font-bold flex items-center justify-center">3</span>
-          </Link>
-
-          {/* User menu */}
-          <div className="relative user-menu-wrap hidden sm:block">
-            <button
-              onClick={() => setUserOpen(!userOpen)}
-              className="flex items-center gap-1.5 h-9 px-3 rounded-lg text-gray-300 hover:text-white hover:bg-dark-secondary transition-colors text-[13px] font-medium"
-            >
-              <User size={16} />
-              My Account
-              <ChevronDown size={12} className={cn("transition-transform", userOpen && "rotate-180")} />
-            </button>
-
-            {userOpen && (
-              <div className="absolute right-0 top-full mt-2 w-52 bg-dark-card border border-dark-border rounded-xl shadow-card overflow-hidden animate-fade-in z-50">
-                <div className="p-3 border-b border-dark-border">
-                  <p className="text-sm font-semibold">My Account</p>
-                  <p className="text-xs text-gray-400 mt-0.5">Manage your profile</p>
+          {/* User menu — authenticated */}
+          {!authLoading && user ? (
+            <div className="relative user-menu-wrap hidden sm:block">
+              <button
+                onClick={() => setUserOpen(!userOpen)}
+                className="flex items-center gap-1.5 h-9 px-3 rounded-lg text-gray-300 hover:text-white hover:bg-dark-secondary transition-colors text-[13px] font-medium"
+              >
+                <div className="w-6 h-6 rounded-full bg-brand-orange flex items-center justify-center text-[10px] font-black text-white flex-shrink-0">
+                  {displayName[0]?.toUpperCase()}
                 </div>
-                <div className="p-1.5">
-                  {[
-                    { href: "/account/profile", icon: User,     label: "Profile" },
-                    { href: "/account/listings",icon: Package,  label: "My Listings" },
-                    { href: "/account/settings", icon: Settings, label: "Settings" },
-                  ].map((item) => (
+                <span className="max-w-[100px] truncate">{displayName}</span>
+                <ChevronDown size={12} className={cn("transition-transform", userOpen && "rotate-180")} />
+              </button>
+
+              {userOpen && (
+                <div className="absolute right-0 top-full mt-2 w-56 bg-dark-card border border-dark-border rounded-xl shadow-card overflow-hidden animate-fade-in z-50">
+                  <div className="p-3 border-b border-dark-border">
+                    <p className="text-sm font-semibold text-white truncate">{displayName}</p>
+                    <p className="text-xs text-gray-400 mt-0.5 truncate">{user.email}</p>
+                    {isSeller && user.storeName && (
+                      <p className="text-[11px] text-brand-orange mt-0.5 flex items-center gap-1">
+                        <Store size={10} /> {user.storeName}
+                      </p>
+                    )}
+                  </div>
+                  <div className="p-1.5">
+                    {isSeller && (
+                      <>
+                        <Link
+                          href="/dashboard"
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-gray-300 hover:text-white hover:bg-dark-secondary transition-colors"
+                          onClick={() => setUserOpen(false)}
+                        >
+                          <LayoutDashboard size={14} /> Dashboard
+                        </Link>
+                        <Link
+                          href="/dashboard/products/new"
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-gray-300 hover:text-white hover:bg-dark-secondary transition-colors"
+                          onClick={() => setUserOpen(false)}
+                        >
+                          <PlusCircle size={14} /> Add Product
+                        </Link>
+                        {user.storeSlug && (
+                          <Link
+                            href={`/store/${user.storeSlug}`}
+                            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-gray-300 hover:text-white hover:bg-dark-secondary transition-colors"
+                            onClick={() => setUserOpen(false)}
+                          >
+                            <Store size={14} /> My Store
+                          </Link>
+                        )}
+                        <div className="border-t border-dark-border my-1.5" />
+                      </>
+                    )}
+                    {!isSeller && (
+                      <Link
+                        href="/seller/setup"
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-brand-orange hover:bg-brand-orange-light transition-colors"
+                        onClick={() => setUserOpen(false)}
+                      >
+                        <Store size={14} /> Become a Seller
+                      </Link>
+                    )}
                     <Link
-                      key={item.href}
-                      href={item.href}
+                      href="/wishlist"
                       className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-gray-300 hover:text-white hover:bg-dark-secondary transition-colors"
                       onClick={() => setUserOpen(false)}
                     >
-                      <item.icon size={14} />
-                      {item.label}
+                      <Heart size={14} /> Wishlist
                     </Link>
-                  ))}
-                  <div className="border-t border-dark-border my-1.5" />
-                  <Link
-                    href="/auth/login"
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-brand-orange hover:bg-brand-orange-light transition-colors"
-                    onClick={() => setUserOpen(false)}
-                  >
-                    <LogOut size={14} />
-                    Sign In / Register
-                  </Link>
+                    <Link
+                      href="/dashboard/settings"
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-gray-300 hover:text-white hover:bg-dark-secondary transition-colors"
+                      onClick={() => setUserOpen(false)}
+                    >
+                      <Settings size={14} /> Settings
+                    </Link>
+                    <div className="border-t border-dark-border my-1.5" />
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-red-400 hover:bg-red-500/10 transition-colors"
+                    >
+                      <LogOut size={14} /> Sign Out
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-
-          {/* Auth buttons (guest) */}
-          <div className="hidden sm:flex items-center gap-2">
-            <Link href="/auth/login"    className="h-9 px-4 border border-dark-border rounded-lg text-[13px] font-medium text-white hover:border-brand-orange hover:text-brand-orange transition-colors flex items-center">Sign In</Link>
-            <Link href="/auth/register" className="h-9 px-4 bg-brand-orange rounded-lg text-[13px] font-semibold text-white hover:bg-brand-orange-hover transition-colors flex items-center">Register</Link>
-          </div>
+              )}
+            </div>
+          ) : !authLoading ? (
+            /* Guest auth buttons */
+            <div className="hidden sm:flex items-center gap-2">
+              <Link href="/auth/login"    className="h-9 px-4 border border-dark-border rounded-lg text-[13px] font-medium text-white hover:border-brand-orange hover:text-brand-orange transition-colors flex items-center">Sign In</Link>
+              <Link href="/auth/register" className="h-9 px-4 bg-brand-orange rounded-lg text-[13px] font-semibold text-white hover:bg-brand-orange-hover transition-colors flex items-center">Register</Link>
+            </div>
+          ) : (
+            /* Loading skeleton */
+            <div className="hidden sm:block w-24 h-9 rounded-lg bg-dark-secondary animate-pulse" />
+          )}
 
           {/* Mobile hamburger */}
           <button
@@ -192,10 +276,19 @@ export function Navbar() {
               {l.label}
             </Link>
           ))}
-          <div className="flex gap-2 pt-2 border-t border-dark-border">
-            <Link href="/auth/login"    className="flex-1 h-9 border border-dark-border rounded-lg text-[13px] font-medium text-white flex items-center justify-center">Sign In</Link>
-            <Link href="/auth/register" className="flex-1 h-9 bg-brand-orange rounded-lg text-[13px] font-semibold text-white flex items-center justify-center">Register</Link>
-          </div>
+          {user ? (
+            <>
+              {isSeller && <Link href="/dashboard" className="text-sm font-medium py-1 text-brand-orange" onClick={() => setMenuOpen(false)}><LayoutDashboard size={13} className="inline mr-2" />Dashboard</Link>}
+              {!isSeller && <Link href="/seller/setup" className="text-sm font-medium py-1 text-brand-orange" onClick={() => setMenuOpen(false)}><Store size={13} className="inline mr-2" />Become a Seller</Link>}
+              <Link href="/wishlist" className="text-sm font-medium py-1 text-gray-300" onClick={() => setMenuOpen(false)}><Heart size={13} className="inline mr-2" />Wishlist</Link>
+              <button onClick={handleLogout} className="text-sm font-medium py-1 text-red-400 text-left flex items-center gap-2"><LogOut size={13} />Sign Out</button>
+            </>
+          ) : (
+            <div className="flex gap-2 pt-2 border-t border-dark-border">
+              <Link href="/auth/login"    className="flex-1 h-9 border border-dark-border rounded-lg text-[13px] font-medium text-white flex items-center justify-center" onClick={() => setMenuOpen(false)}>Sign In</Link>
+              <Link href="/auth/register" className="flex-1 h-9 bg-brand-orange rounded-lg text-[13px] font-semibold text-white flex items-center justify-center" onClick={() => setMenuOpen(false)}>Register</Link>
+            </div>
+          )}
         </div>
       )}
     </header>

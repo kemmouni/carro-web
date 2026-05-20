@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Heart, MessageCircle, Phone, Copy } from "lucide-react";
 import { cn, formatPrice } from "@/lib/utils";
@@ -28,10 +28,49 @@ function buildWhatsApp(phone: string, title: string) {
 }
 
 export function ContactPanel({
-  title, price, originalPrice, currency, condition, partNumber,
+  productId, title, price, originalPrice, currency, condition, partNumber,
   storeSlug, storeName, storePhone,
 }: Props) {
   const [wishlisted, setWishlisted] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+
+  // Check initial wishlist state
+  useEffect(() => {
+    fetch("/api/wishlist")
+      .then((r) => r.json())
+      .then((j) => {
+        if (j.success) {
+          setWishlisted(j.data.some((item: { id: string }) => item.id === productId));
+        }
+      })
+      .catch(() => {/* not logged in, ignore */});
+  }, [productId]);
+
+  async function toggleWishlist() {
+    if (wishlistLoading) return;
+    setWishlistLoading(true);
+    try {
+      if (wishlisted) {
+        const res = await fetch(`/api/wishlist?productId=${productId}`, { method: "DELETE" });
+        const j   = await res.json();
+        if (j.success) { setWishlisted(false); toast.success("Removed from wishlist"); }
+        else if (res.status === 401) toast.error("Sign in to save items");
+        else toast.error(j.error ?? "Error");
+      } else {
+        const res = await fetch("/api/wishlist", {
+          method:  "POST",
+          headers: { "Content-Type": "application/json" },
+          body:    JSON.stringify({ productId }),
+        });
+        const j = await res.json();
+        if (j.success) { setWishlisted(true); toast.success("Saved to wishlist!"); }
+        else if (res.status === 401) toast.error("Sign in to save items");
+        else toast.error(j.error ?? "Error");
+      }
+    } finally {
+      setWishlistLoading(false);
+    }
+  }
 
   function copyPart() {
     if (!partNumber) return;
@@ -45,9 +84,10 @@ export function ContactPanel({
         <div className="flex items-center justify-between mb-3">
           <ConditionBadge condition={condition} />
           <button
-            onClick={() => setWishlisted(!wishlisted)}
+            onClick={toggleWishlist}
+            disabled={wishlistLoading}
             className={cn(
-              "flex items-center gap-1.5 text-[12px] font-medium transition-colors",
+              "flex items-center gap-1.5 text-[12px] font-medium transition-colors disabled:opacity-60",
               wishlisted ? "text-brand-orange" : "text-gray-400 hover:text-brand-orange"
             )}
           >

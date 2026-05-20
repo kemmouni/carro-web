@@ -3,10 +3,11 @@ import Link from "next/link";
 import { ChevronRight, MapPin, Shield, BadgeCheck, Lock } from "lucide-react";
 import { supabaseAdmin } from "@/lib/supabase";
 import { formatPrice, conditionLabel } from "@/lib/utils";
-import { ProductGallery } from "@/components/product/ProductGallery";
-import { ContactPanel }   from "@/components/product/ContactPanel";
-import { ProductCard }    from "@/components/ui/ProductCard";
-import type { Product }   from "@/lib/types";
+import { ProductGallery }        from "@/components/product/ProductGallery";
+import { ContactPanel }          from "@/components/product/ContactPanel";
+import { ProductCard }           from "@/components/ui/ProductCard";
+import { RecentlyViewedTracker } from "@/components/product/RecentlyViewedTracker";
+import type { Product }          from "@/lib/types";
 
 // ── Data fetching ─────────────────────────────────────────
 async function getProduct(id: string) {
@@ -72,6 +73,13 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="max-w-screen-xl mx-auto px-6 py-6 pb-16">
+      <RecentlyViewedTracker
+        id={p.id}
+        title={p.title}
+        price={p.price}
+        currency={p.currency}
+        imageUrl={p.images[0]?.url}
+      />
 
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 text-[12px] text-gray-500 mb-6">

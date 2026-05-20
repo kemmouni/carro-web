@@ -5,9 +5,9 @@ import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const store = await getSellerStore();
 
-  // If somehow they got past middleware without a store, redirect to login
+  // No store yet → seller onboarding
   if (!store) {
-    redirect("/auth/login");
+    redirect("/seller/setup");
   }
 
   return (

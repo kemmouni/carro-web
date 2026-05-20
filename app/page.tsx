@@ -1,9 +1,9 @@
 import Link from "next/link";
-import Image from "next/image";
 import { ChevronRight } from "lucide-react";
-import { HeroBanner }      from "@/components/sections/HeroBanner";
-import { QuickCategories } from "@/components/sections/QuickCategories";
-import { TrustBadges }     from "@/components/sections/TrustBadges";
+import { HeroBanner }       from "@/components/sections/HeroBanner";
+import { QuickCategories }  from "@/components/sections/QuickCategories";
+import { TrustBadges }      from "@/components/sections/TrustBadges";
+import { RecentlyViewed }   from "@/components/sections/RecentlyViewed";
 import { ProductCard }     from "@/components/ui/ProductCard";
 import { supabaseAdmin }   from "@/lib/supabase";
 import type { Product } from "@/lib/types";
@@ -91,7 +91,7 @@ export default async function HomePage() {
           <h2 className="section-title mb-5">Popular Brands</h2>
           <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
             {BRANDS.map((brand) => (
-              <Link key={brand} href={`/search?brand=${encodeURIComponent(brand)}`}
+              <Link key={brand} href={`/search?carMake=${encodeURIComponent(brand)}`}
                 className="card flex items-center gap-3 px-6 py-4 min-w-[160px] flex-shrink-0 hover:border-brand-orange transition-colors group">
                 <div className="w-8 h-8 flex items-center justify-center opacity-70 group-hover:opacity-100 transition-opacity">
                   <span className="text-[18px] font-black text-brand-orange">{brand[0]}</span>
@@ -113,25 +113,7 @@ export default async function HomePage() {
             </div>
           </Section>
 
-          <section>
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="section-title">Recently Viewed</h2>
-              <Link href="/account/history" className="orange-link">View All <ChevronRight size={14} /></Link>
-            </div>
-            <div className="card overflow-hidden divide-y divide-dark-border">
-              {featured.slice(0, 3).map((p) => (
-                <Link key={p.id} href={`/product/${p.id}`} className="flex items-center gap-3 p-3.5 hover:bg-dark-secondary transition-colors group">
-                  <div className="relative w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-dark-secondary">
-                    {p.images[0] && <Image src={p.images[0].url} alt={p.title} fill className="object-cover" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[12px] font-medium text-white truncate">{p.title}</p>
-                    <p className="text-[13px] font-bold text-brand-orange mt-0.5">{p.currency ?? "QAR"} {p.price.toLocaleString()}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
+          <RecentlyViewed />
         </div>
       </div>
     </>

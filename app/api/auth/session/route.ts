@@ -13,18 +13,19 @@ export async function GET() {
     // Fetch user record + store
     const [userRes, storeRes] = await Promise.all([
       supabaseAdmin.from("users").select("role, fullName").eq("id", user.id).single(),
-      supabaseAdmin.from("stores").select("id, name, slug").eq("userId", user.id).single(),
+      supabaseAdmin.from("stores").select("id, name, slug").eq("userId", user.id).maybeSingle(),
     ]);
 
     return NextResponse.json({
       success: true,
       data: {
-        id:       user.id,
-        email:    user.email,
-        role:     userRes.data?.role     ?? "BUYER",
-        fullName: userRes.data?.fullName ?? null,
-        storeId:  storeRes.data?.id      ?? null,
-        storeName:storeRes.data?.name    ?? null,
+        id:        user.id,
+        email:     user.email,
+        role:      userRes.data?.role      ?? "BUYER",
+        fullName:  userRes.data?.fullName  ?? null,
+        storeId:   storeRes.data?.id       ?? null,
+        storeSlug: storeRes.data?.slug     ?? null,
+        storeName: storeRes.data?.name     ?? null,
       },
     });
   } catch (err) {

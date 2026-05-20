@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { MapPin, Clock, Phone, Mail, Globe, Star, ShieldCheck, MessageCircle, Heart, Package, BarChart2 } from "lucide-react";
+import { MapPin, Clock, Phone, Mail, Globe, Star, ShieldCheck, MessageCircle, Heart, Package, BarChart2, Send, Loader2 } from "lucide-react";
 import { cn, formatPrice, timeAgo } from "@/lib/utils";
 import { ConditionBadge } from "@/components/ui/Badge";
 import { StarRating } from "@/components/ui/StarRating";
@@ -106,8 +106,17 @@ export function StoreContent({ store, products }: Props) {
   const [followed, setFollowed] = useState(false);
   const [sort,     setSort]     = useState("newest");
 
-  const reviews   = (store.reviews ?? []) as Review[];
-  const avgRating = store.avgRating ?? 0;
+  // Review form state
+  const [reviewList,    setReviewList]    = useState<Review[]>((store.reviews ?? []) as Review[]);
+  const [reviewRating,  setReviewRating]  = useState(0);
+  const [reviewHover,   setReviewHover]   = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [reviewError,   setReviewError]   = useState("");
+  const [reviewDone,    setReviewDone]    = useState(false);
+
+  const reviews   = reviewList;
+  const avgRating = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : (store.avgRating ?? 0);
   const joinedYear = new Date(store.createdAt).getFullYear();
 
   const sorted = [...products].sort((a, b) => {
@@ -116,6 +125,30 @@ export function StoreContent({ store, products }: Props) {
     if (sort === "views")      return (b.viewCount ?? 0) - (a.viewCount ?? 0);
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
+
+  async function submitReview(e: React.FormEvent) {
+    e.preventDefault();
+    if (reviewRating === 0) { setReviewError("Please select a star rating"); return; }
+    setReviewLoading(true);
+    setReviewError("");
+    try {
+      const res  = await fetch("/api/reviews", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ storeId: store.id, rating: reviewRating, comment: reviewComment }),
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error ?? "Failed to submit");
+      setReviewList((prev) => [json.data, ...prev]);
+      setReviewDone(true);
+      setReviewRating(0);
+      setReviewComment("");
+    } catch (err) {
+      setReviewError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setReviewLoading(false);
+    }
+  }
 
   function buildWhatsApp() {
     if (!store.phone) return "#";
@@ -269,13 +302,73 @@ export function StoreContent({ store, products }: Props) {
           {tab === "reviews" && (
             <div className="flex gap-6">
               <div className="flex-1 min-w-0 space-y-4">
+
+                {/* Write a review */}
+                {reviewDone ? (
+                  <div className="card p-5 flex items-center gap-3 text-green-400">
+                    <Star size={18} className="fill-green-400" />
+                    <p className="text-[14px] font-semibold">Thanks for your review!</p>
+                  </div>
+                ) : (
+                  <form onSubmit={submitReview} className="card p-5 space-y-4">
+                    <h3 className="text-[14px] font-bold text-white">Write a Review</h3>
+
+                    {reviewError && (
+                      <p className="text-[12px] text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">{reviewError}</p>
+                    )}
+
+                    {/* Star picker */}
+                    <div>
+                      <p className="text-[12px] text-gray-400 mb-2">Your Rating</p>
+                      <div className="flex gap-1">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                          <button
+                            key={s}
+                            type="button"
+                            onMouseEnter={() => setReviewHover(s)}
+                            onMouseLeave={() => setReviewHover(0)}
+                            onClick={() => setReviewRating(s)}
+                            className="transition-transform hover:scale-110"
+                          >
+                            <Star
+                              size={24}
+                              className={(reviewHover || reviewRating) >= s ? "text-yellow-400 fill-yellow-400" : "text-gray-600 fill-gray-600"}
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-[12px] text-gray-400 mb-1.5">Comment (optional)</p>
+                      <textarea
+                        className="input w-full resize-none h-24"
+                        placeholder="Share your experience with this seller…"
+                        value={reviewComment}
+                        onChange={(e) => setReviewComment(e.target.value)}
+                        maxLength={500}
+                      />
+                      <p className="text-[10px] text-gray-600 mt-1 text-right">{reviewComment.length}/500</p>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={reviewLoading || reviewRating === 0}
+                      className="btn-primary h-10 px-5 disabled:opacity-60"
+                    >
+                      {reviewLoading ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                      {reviewLoading ? "Submitting…" : "Submit Review"}
+                    </button>
+                  </form>
+                )}
+
                 {reviews.length === 0
-                  ? <div className="card py-16 text-center text-gray-500">No reviews yet.</div>
+                  ? <div className="card py-12 text-center text-gray-500 text-sm">Be the first to leave a review!</div>
                   : reviews.map((r) => <ReviewCard key={r.id} review={r} />)
                 }
               </div>
               <aside className="w-[220px] flex-shrink-0 hidden lg:block">
-                {avgRating > 0 && <RatingBreakdown reviews={reviews} avgRating={avgRating} />}
+                {reviews.length > 0 && <RatingBreakdown reviews={reviews} avgRating={reviews.reduce((s, r) => s + r.rating, 0) / reviews.length} />}
               </aside>
             </div>
           )}

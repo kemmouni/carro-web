@@ -8,6 +8,7 @@ async function ensureBucket() {
   const exists = buckets?.some((b) => b.name === BUCKET);
   if (!exists) {
     await supabaseAdmin.storage.createBucket(BUCKET, { public: true, fileSizeLimit: 5242880 });
+    // Note: bucket is created as public: true which grants public read access
   }
 }
 
