@@ -114,9 +114,16 @@ export default async function DashboardProductsPage() {
 
                     {/* Status */}
                     <td className="px-4 py-3.5 hidden lg:table-cell">
-                      <span className={`text-[11px] font-semibold px-2 py-1 rounded-full ${product.isActive ? "bg-green-500/15 text-green-400" : "bg-red-500/15 text-red-400"}`}>
-                        {product.isActive ? "Active" : "Inactive"}
-                      </span>
+                      {(() => {
+                        const status = (product as unknown as { approvalStatus?: string }).approvalStatus ?? "ACTIVE";
+                        const color =
+                          status === "ACTIVE"   ? "bg-green-500/15 text-green-400" :
+                          status === "PENDING"  ? "bg-yellow-500/15 text-yellow-400" :
+                          status === "REJECTED" ? "bg-red-500/15 text-red-400" :
+                          product.isActive      ? "bg-green-500/15 text-green-400" : "bg-red-500/15 text-red-400";
+                        const label = status !== "ACTIVE" ? status : (product.isActive ? "Active" : "Inactive");
+                        return <span className={`text-[11px] font-semibold px-2 py-1 rounded-full ${color}`}>{label}</span>;
+                      })()}
                     </td>
 
                     {/* Views */}

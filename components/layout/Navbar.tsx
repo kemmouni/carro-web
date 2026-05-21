@@ -6,9 +6,10 @@ import { useState, useRef, useEffect } from "react";
 import {
   Search, Heart, User, ChevronDown,
   MapPin, Menu, X, LogOut, Settings, Package,
-  Store, LayoutDashboard, PlusCircle,
+  Store, LayoutDashboard, PlusCircle, Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import LanguageSwitcher from "@/components/ui/LanguageSwitcher";
 
 const NAV_LINKS = [
   { href: "/browse",            label: "Browse"  },
@@ -36,19 +37,43 @@ export function Navbar() {
   // Auth state
   const [user,       setUser]       = useState<SessionUser | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notifOpen,   setNotifOpen]   = useState(false);
+  const [notifications, setNotifications] = useState<Array<{ id: string; title: string; message: string; link: string | null; isRead: boolean; createdAt: string }>>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetch("/api/auth/session")
       .then((r) => r.json())
-      .then((j) => { if (j.success) setUser(j.data); })
+      .then((j) => {
+        if (j.success) {
+          setUser(j.data);
+          // Fetch notifications
+          fetch("/api/notifications")
+            .then((r) => r.json())
+            .then((n) => {
+              if (n.success) {
+                setNotifications(n.data ?? []);
+                setUnreadCount(n.unread ?? 0);
+              }
+            });
+        }
+      })
       .finally(() => setAuthLoading(false));
   }, []);
+
+  async function markNotificationsRead() {
+    if (!unreadCount) return;
+    await fetch("/api/notifications", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    setUnreadCount(0);
+  }
 
   // Close dropdowns on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (!(e.target as Element).closest(".user-menu-wrap")) setUserOpen(false);
+      if (!(e.target as Element).closest(".notif-wrap")) setNotifOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -117,6 +142,9 @@ export function Navbar() {
         {/* Right actions */}
         <div className="flex items-center gap-2 ml-auto lg:ml-0">
 
+          {/* Language switcher */}
+          <LanguageSwitcher />
+
           {/* Location */}
           <button className="hidden md:flex items-center gap-1.5 h-9 px-3 border border-dark-border rounded-lg text-[13px] font-medium text-white hover:border-brand-orange transition-colors">
             <MapPin size={13} className="text-brand-orange" />
@@ -142,6 +170,58 @@ export function Navbar() {
           >
             <Heart size={18} />
           </Link>
+
+          {/* Notifications bell — authenticated users only */}
+          {user && (
+            <div className="relative notif-wrap">
+              <button
+                onClick={() => { setNotifOpen(!notifOpen); if (!notifOpen) markNotificationsRead(); }}
+                className="relative w-9 h-9 flex items-center justify-center rounded-lg text-gray-300 hover:text-white hover:bg-dark-secondary transition-colors"
+              >
+                <Bell size={18} />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 w-4 h-4 bg-brand-orange rounded-full text-[9px] font-black text-white flex items-center justify-center">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {notifOpen && (
+                <div className="absolute right-0 top-full mt-2 w-80 bg-dark-card border border-dark-border rounded-xl shadow-card overflow-hidden animate-fade-in z-50">
+                  <div className="px-4 py-3 border-b border-dark-border flex items-center justify-between">
+                    <p className="text-[13px] font-bold text-white">Notifications</p>
+                    {unreadCount > 0 && (
+                      <span className="text-[11px] text-brand-orange">{unreadCount} new</span>
+                    )}
+                  </div>
+                  <div className="max-h-80 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <div className="py-8 text-center">
+                        <Bell size={24} className="text-gray-600 mx-auto mb-2" />
+                        <p className="text-[12px] text-gray-500">No notifications yet</p>
+                      </div>
+                    ) : (
+                      notifications.map((n) => (
+                        <a
+                          key={n.id}
+                          href={n.link ?? "#"}
+                          className={`flex gap-3 px-4 py-3 border-b border-dark-border last:border-none hover:bg-dark-secondary transition-colors ${!n.isRead ? "bg-brand-orange/5" : ""}`}
+                          onClick={() => setNotifOpen(false)}
+                        >
+                          <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${!n.isRead ? "bg-brand-orange" : "bg-transparent"}`} />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[12px] font-semibold text-white">{n.title}</p>
+                            <p className="text-[11px] text-gray-500 mt-0.5 line-clamp-2">{n.message}</p>
+                            <p className="text-[10px] text-gray-600 mt-1">{new Date(n.createdAt).toLocaleDateString()}</p>
+                          </div>
+                        </a>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* User menu — authenticated */}
           {!authLoading && user ? (

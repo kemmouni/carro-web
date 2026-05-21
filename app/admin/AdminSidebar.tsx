@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Tag, Car, LogOut } from "lucide-react";
+import { LayoutDashboard, Tag, Car, Package, Users, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { label: "Overview",   href: "/admin",            icon: LayoutDashboard },
+  { label: "Products",   href: "/admin/products",   icon: Package },
+  { label: "Users",      href: "/admin/users",       icon: Users },
   { label: "Categories", href: "/admin/categories",  icon: Tag },
   { label: "Brands",     href: "/admin/brands",      icon: Car },
 ];

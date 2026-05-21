@@ -7,15 +7,28 @@ import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"], display: "swap" });
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://carro.qa";
+
 export const metadata: Metadata = {
   title: { default: "Carro — Auto Parts Marketplace Qatar", template: "%s | Carro" },
   description: "Qatar's #1 marketplace for quality auto parts. 2,000+ verified sellers. Shop engine parts, brakes, wheels, AC, and more.",
-  keywords: ["auto parts", "car parts", "Qatar", "Doha", "auto parts marketplace"],
+  keywords: ["auto parts", "car parts", "Qatar", "Doha", "auto parts marketplace", "قطعات السيارات"],
+  metadataBase: new URL(BASE_URL),
   openGraph: {
     title: "Carro — Auto Parts Marketplace Qatar",
-    description: "Qatar's #1 marketplace for quality auto parts.",
+    description: "Qatar's #1 marketplace for quality auto parts. Buy & sell OEM and aftermarket parts.",
     type: "website",
     locale: "en_QA",
+    siteName: "Carro",
+    url: BASE_URL,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Carro — Auto Parts Marketplace Qatar",
+    description: "Qatar's #1 marketplace for quality auto parts.",
+  },
+  alternates: {
+    canonical: BASE_URL,
   },
 };
 

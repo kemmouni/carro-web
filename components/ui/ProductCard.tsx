@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, MapPin } from "lucide-react";
+import { Heart, MapPin, GitCompareArrows } from "lucide-react";
 import { useState } from "react";
 import { cn, formatPrice, primaryImage, PLACEHOLDER_IMG, timeAgo } from "@/lib/utils";
 import { ConditionBadge } from "./Badge";
@@ -51,6 +51,9 @@ export function ProductCard({ product, variant = "grid", className }: ProductCar
         >
           <Heart size={14} fill={wishlisted ? "currentColor" : "none"} />
         </button>
+
+        {/* Compare */}
+        <CompareButtonInline productId={product.id} />
       </div>
 
       {/* Body */}
@@ -91,6 +94,50 @@ export function ProductCard({ product, variant = "grid", className }: ProductCar
         )}
       </div>
     </Link>
+  );
+}
+
+function CompareButtonInline({ productId }: { productId: string }) {
+  const [inList, setInList] = useState(false);
+  // Read from localStorage on mount
+  useState(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const ids = JSON.parse(localStorage.getItem("carro_compare") ?? "[]");
+        setInList(ids.includes(productId));
+      } catch {}
+    }
+  });
+
+  function toggle(e: React.MouseEvent) {
+    e.preventDefault();
+    try {
+      const ids: string[] = JSON.parse(localStorage.getItem("carro_compare") ?? "[]");
+      if (ids.includes(productId)) {
+        const next = ids.filter((id) => id !== productId);
+        localStorage.setItem("carro_compare", JSON.stringify(next));
+        setInList(false);
+      } else {
+        if (ids.length >= 3) return;
+        const next = [...ids, productId];
+        localStorage.setItem("carro_compare", JSON.stringify(next));
+        setInList(true);
+        window.dispatchEvent(new Event("compare-updated"));
+      }
+    } catch {}
+  }
+
+  return (
+    <button
+      onClick={toggle}
+      title="Compare"
+      className={cn(
+        "absolute bottom-2.5 right-2.5 w-7 h-7 rounded-full flex items-center justify-center backdrop-blur-sm transition-all duration-200 opacity-0 group-hover:opacity-100",
+        inList ? "bg-brand-orange text-white opacity-100" : "bg-black/50 text-gray-300 hover:text-white"
+      )}
+    >
+      <GitCompareArrows size={12} />
+    </button>
   );
 }
 

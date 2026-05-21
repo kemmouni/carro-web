@@ -6,16 +6,19 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, Package, ShoppingBag, Star,
   Settings, Store, PlusCircle, LogOut, Home, ChevronRight,
+  MessageSquare, BarChart2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV: Array<{ label: string; href: string; icon: React.ElementType }> = [
-  { label: "Overview",   href: "/dashboard",          icon: LayoutDashboard },
-  { label: "Products",   href: "/dashboard/products", icon: Package },
-  { label: "Orders",     href: "/dashboard/orders",   icon: ShoppingBag },
-  { label: "Reviews",    href: "/dashboard/reviews",  icon: Star },
-  { label: "Store",      href: "/dashboard/store",    icon: Store },
-  { label: "Settings",   href: "/dashboard/settings", icon: Settings },
+  { label: "Overview",   href: "/dashboard",            icon: LayoutDashboard },
+  { label: "Products",   href: "/dashboard/products",   icon: Package },
+  { label: "Messages",   href: "/dashboard/messages",   icon: MessageSquare },
+  { label: "Analytics",  href: "/dashboard/analytics",  icon: BarChart2 },
+  { label: "Orders",     href: "/dashboard/orders",     icon: ShoppingBag },
+  { label: "Reviews",    href: "/dashboard/reviews",    icon: Star },
+  { label: "Store",      href: "/dashboard/store",      icon: Store },
+  { label: "Settings",   href: "/dashboard/settings",   icon: Settings },
 ];
 
 interface Props {
@@ -34,7 +37,7 @@ export function DashboardSidebar({ storeName, isVerified }: Props) {
   }
 
   return (
-    <aside className="w-60 bg-dark-secondary border-r border-dark-border flex flex-col flex-shrink-0">
+    <aside className="w-60 h-screen bg-dark-secondary border-r border-dark-border flex flex-col flex-shrink-0">
       {/* Logo */}
       <div className="px-5 py-5 border-b border-dark-border">
         <Link href="/" className="flex items-center gap-2">

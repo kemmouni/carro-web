@@ -5,6 +5,8 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { formatPrice, conditionLabel } from "@/lib/utils";
 import { ProductGallery }        from "@/components/product/ProductGallery";
 import { ContactPanel }          from "@/components/product/ContactPanel";
+import InquiryForm               from "@/components/product/InquiryForm";
+import CompareButton             from "@/components/product/CompareButton";
 import { ProductCard }           from "@/components/ui/ProductCard";
 import { RecentlyViewedTracker } from "@/components/product/RecentlyViewedTracker";
 import type { Product }          from "@/lib/types";
@@ -157,6 +159,16 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             storePhone={store.phone}
           />
 
+          <InquiryForm
+            productId={p.id}
+            storeId={store.id}
+            productTitle={p.title}
+          />
+
+          <div className="flex justify-end">
+            <CompareButton productId={p.id} />
+          </div>
+
           {/* Location */}
           <div className="card overflow-hidden">
             <div className="flex items-center gap-2 px-4 py-3 border-b border-dark-border text-[12px] font-semibold">
@@ -195,8 +207,25 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const product = await getProduct(id);
   if (!product) return { title: "Product Not Found" };
   const p = product as unknown as Product;
+  const imageUrl = p.images[0]?.url;
+  const description = p.description
+    ? p.description.slice(0, 155)
+    : `${p.title} — ${p.condition} condition, ${formatPrice(p.price, p.currency)}. Available in Qatar.`;
+
   return {
     title: `${p.title} — ${formatPrice(p.price, p.currency)}`,
-    description: p.description ?? `${p.title} for sale in Qatar`,
+    description,
+    openGraph: {
+      title: `${p.title} — ${formatPrice(p.price, p.currency)}`,
+      description,
+      type: "website",
+      images: imageUrl ? [{ url: imageUrl, width: 1200, height: 630, alt: p.title }] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: p.title,
+      description,
+      images: imageUrl ? [imageUrl] : [],
+    },
   };
 }

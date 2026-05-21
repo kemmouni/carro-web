@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
         images:product_images(id, url, "isPrimary", "sortOrder")
       `, { count: "exact" })
       .eq("isActive", true)
+      .eq("approvalStatus", "ACTIVE")
       .range((page - 1) * limit, page * limit - 1);
 
     if (q)         query = query.ilike("title", `%${q}%`);
@@ -99,8 +100,10 @@ export async function POST(req: NextRequest) {
         carModel:      body.carModel,
         carYear:       body.carYear,
         carYearTo:     body.carYearTo,
-        isFeatured:    body.isFeatured ?? false,
-        updatedAt:     new Date().toISOString(),
+        isFeatured:     body.isFeatured ?? false,
+        isActive:       false,
+        approvalStatus: "PENDING",
+        updatedAt:      new Date().toISOString(),
       })
       .select()
       .single();
@@ -118,6 +121,24 @@ export async function POST(req: NextRequest) {
           sortOrder: i,
         }))
       );
+    }
+
+    // Notify all admins of new pending product
+    if (product) {
+      const { data: admins } = await supabaseAdmin
+        .from("users").select("id").eq("role", "ADMIN");
+      if (admins?.length) {
+        await supabaseAdmin.from("notifications").insert(
+          admins.map((a: { id: string }) => ({
+            id:      crypto.randomUUID(),
+            userId:  a.id,
+            type:    "new_product_pending",
+            title:   "New listing pending review",
+            message: `"${body.title}" needs your approval.`,
+            link:    "/admin/products",
+          }))
+        );
+      }
     }
 
     return NextResponse.json({ success: true, data: product }, { status: 201 });
