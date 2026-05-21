@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import MobileHeader from "@/components/layout/MobileHeader";
+import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"], display: "swap" });
@@ -36,9 +38,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className="dark">
       <body className={inter.className}>
-        <Navbar />
-        <main className="min-h-screen">{children}</main>
-        <Footer />
+        {/* Desktop navbar */}
+        <div className="hidden md:block">
+          <Navbar />
+        </div>
+        {/* Mobile header (replaces desktop navbar on small screens) */}
+        <MobileHeader />
+        <main className="min-h-screen pb-16 md:pb-0">{children}</main>
+        {/* Desktop footer */}
+        <div className="hidden md:block">
+          <Footer />
+        </div>
+        {/* Mobile bottom tab bar */}
+        <MobileBottomNav />
         <Toaster
           theme="dark"
           position="top-right"

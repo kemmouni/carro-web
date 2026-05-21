@@ -74,10 +74,15 @@ export function ProductCard({ product, variant = "grid", className }: ProductCar
           )}
         </div>
 
-        {/* Location */}
-        <div className="flex items-center gap-1 text-[11px] text-gray-500 mb-2">
-          <MapPin size={10} />
-          {product.store.city}, {product.store.country}
+        {/* Location + time */}
+        <div className="flex items-center justify-between text-[11px] text-gray-500 mb-2">
+          <div className="flex items-center gap-1">
+            <MapPin size={10} />
+            {product.store.city || "Qatar"}
+          </div>
+          {product.createdAt && (
+            <span className="text-gray-600">{timeAgo(product.createdAt)}</span>
+          )}
         </div>
 
         {/* Seller + rating */}

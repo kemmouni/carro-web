@@ -26,26 +26,47 @@ const CATS: QuickCat[] = [
 
 export function QuickCategories() {
   return (
-    <div className="bg-dark-secondary border-y border-dark-border">
-      <div className="max-w-screen-xl mx-auto px-6">
-        <div className="flex items-stretch overflow-x-auto no-scrollbar divide-x divide-dark-border">
+    <>
+      {/* Mobile: circle pills with scroll */}
+      <div className="md:hidden px-4 py-4 bg-[#0f0f0f]">
+        <div className="flex gap-4 overflow-x-auto no-scrollbar pb-1">
           {CATS.map((cat) => (
             <Link
               key={cat.href}
               href={cat.href}
-              className={cn(
-                "flex flex-col items-center gap-2.5 px-5 py-4 flex-shrink-0 text-center min-w-[80px]",
-                "text-gray-400 hover:text-brand-orange hover:bg-brand-orange-light transition-colors duration-150 group"
-              )}
+              className="flex flex-col items-center gap-2 flex-shrink-0"
             >
-              <span className="group-hover:scale-110 transition-transform duration-150">
+              <div className="w-14 h-14 rounded-full bg-dark-secondary border border-dark-border flex items-center justify-center text-brand-orange hover:bg-brand-orange hover:text-white transition-colors duration-150">
                 {cat.icon}
-              </span>
-              <span className="text-[11px] font-semibold whitespace-nowrap">{cat.label}</span>
+              </div>
+              <span className="text-[10px] font-semibold text-gray-400 whitespace-nowrap">{cat.label}</span>
             </Link>
           ))}
         </div>
       </div>
-    </div>
+
+      {/* Desktop: horizontal bar */}
+      <div className="hidden md:block bg-dark-secondary border-y border-dark-border">
+        <div className="max-w-screen-xl mx-auto px-6">
+          <div className="flex items-stretch overflow-x-auto no-scrollbar divide-x divide-dark-border">
+            {CATS.map((cat) => (
+              <Link
+                key={cat.href}
+                href={cat.href}
+                className={cn(
+                  "flex flex-col items-center gap-2.5 px-5 py-4 flex-shrink-0 text-center min-w-[80px]",
+                  "text-gray-400 hover:text-brand-orange hover:bg-brand-orange-light transition-colors duration-150 group"
+                )}
+              >
+                <span className="group-hover:scale-110 transition-transform duration-150">
+                  {cat.icon}
+                </span>
+                <span className="text-[11px] font-semibold whitespace-nowrap">{cat.label}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

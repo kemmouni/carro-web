@@ -45,14 +45,14 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6 md:mb-8">
         <div>
-          <h1 className="text-2xl font-black text-white">Dashboard</h1>
-          <p className="text-gray-500 text-sm mt-0.5">Welcome back! Here&apos;s your store overview.</p>
+          <h1 className="text-xl md:text-2xl font-black text-white">Dashboard</h1>
+          <p className="text-gray-500 text-[12px] md:text-sm mt-0.5">Welcome back! Here&apos;s your store overview.</p>
         </div>
-        <Link href="/dashboard/products/new" className="btn-primary">
+        <Link href="/dashboard/products/new" className="btn-primary h-9 md:h-12 px-3 md:px-6 text-[13px] md:text-base">
           + Add Product
         </Link>
       </div>

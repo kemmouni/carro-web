@@ -59,4 +59,9 @@
 
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* iOS safe-area bottom padding */
+  .pb-safe {
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
 }

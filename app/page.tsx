@@ -61,10 +61,10 @@ async function getPopularBrands(): Promise<Brand[]> {
 // ─── Section wrapper ──────────────────────────────────────
 function Section({ title, href, children }: { title: string; href: string; children: React.ReactNode }) {
   return (
-    <section className="mb-12">
-      <div className="flex items-center justify-between mb-5">
-        <h2 className="section-title">{title}</h2>
-        <Link href={href} className="orange-link">View all <ChevronRight size={14} /></Link>
+    <section className="mb-8 md:mb-12">
+      <div className="flex items-center justify-between mb-3 md:mb-5">
+        <h2 className="text-[16px] md:text-[22px] font-black text-white tracking-tight">{title}</h2>
+        <Link href={href} className="orange-link text-[12px] md:text-[13px]">See all <ChevronRight size={13} /></Link>
       </div>
       {children}
     </section>
@@ -77,10 +77,74 @@ export default async function HomePage() {
 
   return (
     <>
-      <HeroBanner />
+      {/* Desktop hero — hidden on mobile */}
+      <div className="hidden md:block">
+        <HeroBanner />
+      </div>
+
+      {/* Categories — circles on mobile, bar on desktop */}
       <QuickCategories />
 
-      <div className="max-w-screen-xl mx-auto px-6 pt-10">
+      {/* ── MOBILE CONTENT ── */}
+      <div className="md:hidden px-4 pt-2 pb-4 space-y-6">
+
+        {/* Featured Products — horizontal scroll */}
+        {featured.length > 0 && (
+          <Section title="Featured" href="/search?featured=true">
+            <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
+              {featured.map((p) => (
+                <ProductCard key={p.id} product={p} className="min-w-[155px] w-[155px] flex-shrink-0" />
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {/* New Arrivals — 2-column grid */}
+        <Section title="New Arrivals" href="/search?sort=newest">
+          {arrivals.length > 0 ? (
+            <div className="grid grid-cols-2 gap-3">
+              {arrivals.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 text-sm py-4">No products yet.</p>
+          )}
+        </Section>
+
+        {/* Popular Brands — horizontal scroll */}
+        {popularBrands.length > 0 && (
+          <section className="mb-2">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-[16px] font-black text-white">Brands</h2>
+              <Link href="/search" className="orange-link text-[12px]">See all <ChevronRight size={13} /></Link>
+            </div>
+            <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
+              {popularBrands.map((brand) => (
+                <Link
+                  key={brand.id}
+                  href={`/search?carMake=${encodeURIComponent(brand.name)}`}
+                  className="flex flex-col items-center gap-2 flex-shrink-0 w-16"
+                >
+                  <div className="w-12 h-12 rounded-full bg-dark-secondary border border-dark-border flex items-center justify-center overflow-hidden">
+                    {brand.logoUrl ? (
+                      <Image src={brand.logoUrl} alt={brand.name} width={40} height={40} className="object-contain p-1" />
+                    ) : (
+                      <BrandLogo name={brand.name} size={28} />
+                    )}
+                  </div>
+                  <span className="text-[9px] font-semibold text-gray-500 text-center uppercase tracking-wide truncate w-full text-center">
+                    {brand.name}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
+
+      {/* ── DESKTOP CONTENT ── */}
+      <div className="hidden md:block max-w-screen-xl mx-auto px-6 pt-10">
 
         <Section title="Featured Products" href="/search?featured=true">
           <div className="flex gap-4 overflow-x-auto no-scrollbar pb-1">
