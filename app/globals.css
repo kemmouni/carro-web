@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+Arabic:wght@300;400;500;600;700;800;900&display=swap');
+/* Fonts are self-hosted via next/font — no Google CDN import needed */
 
 @tailwind base;
 @tailwind components;

@@ -65,11 +65,11 @@ export async function GET(req: NextRequest) {
       images: ((p.images as Array<{ sortOrder: number }>) ?? []).sort((a, b) => a.sortOrder - b.sortOrder),
     }));
 
-    return NextResponse.json({
-      success: true,
-      data: products,
-      pagination: { page, limit, total: count ?? 0, pages: Math.ceil((count ?? 0) / limit) },
-    });
+    return NextResponse.json(
+      { success: true, data: products, pagination: { page, limit, total: count ?? 0, pages: Math.ceil((count ?? 0) / limit) } },
+      // Cache public product listings for 30s at the CDN edge
+      { headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" } }
+    );
   } catch (err) {
     console.error("[GET /api/products]", err);
     return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });

@@ -10,6 +10,9 @@ import { BrandLogo }       from "@/components/ui/BrandLogo";
 import { supabaseAdmin }   from "@/lib/supabase";
 import type { Product, Brand } from "@/lib/types";
 
+// Cache homepage for 60 seconds — products don't need to be real-time
+export const revalidate = 60;
+
 // ─── Helpers ─────────────────────────────────────────────
 function normalizeProduct(p: Record<string, unknown>): Product {
   const images = ((p.images as Array<{ sortOrder: number; url: string; id: string; isPrimary: boolean }>) ?? [])
@@ -103,8 +106,8 @@ export default async function HomePage() {
         <Section title="New Arrivals" href="/search?sort=newest">
           {arrivals.length > 0 ? (
             <div className="grid grid-cols-2 gap-3">
-              {arrivals.map((p) => (
-                <ProductCard key={p.id} product={p} />
+              {arrivals.map((p, i) => (
+                <ProductCard key={p.id} product={p} priority={i < 4} />
               ))}
             </div>
           ) : (

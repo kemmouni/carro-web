@@ -7,7 +7,14 @@ import MobileHeader from "@/components/layout/MobileHeader";
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import { Toaster } from "sonner";
 
-const inter = Inter({ subsets: ["latin"], display: "swap" });
+// next/font downloads and self-hosts the font at build time.
+// Zero render-blocking network request to Google Fonts CDN.
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  preload: true,
+  variable: "--font-inter",
+});
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://carro.qa";
 
@@ -37,7 +44,12 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
-      <body className={inter.className}>
+      <head>
+        {/* Pre-connect to Supabase so the TCP handshake is done before the first fetch */}
+        <link rel="preconnect" href="https://mqgequubhvrrgvkoipbg.supabase.co" />
+        <link rel="dns-prefetch" href="https://mqgequubhvrrgvkoipbg.supabase.co" />
+      </head>
+      <body className={`${inter.variable} ${inter.className}`}>
         {/* Desktop navbar */}
         <div className="hidden md:block">
           <Navbar />

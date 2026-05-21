@@ -29,8 +29,20 @@ export const createSupabaseServerClient = async () => {
 };
 
 // ── Admin client (server-only, bypasses RLS) ─────────────
+// db.schema forces the PostgREST schema header which avoids an extra round-trip.
+// autoRefreshToken/persistSession disabled since this is a server-only singleton.
 export const supabaseAdmin = createClient(
   supabaseUrl,
   cleanEnv(process.env.SUPABASE_SERVICE_ROLE_KEY),
-  { auth: { autoRefreshToken: false, persistSession: false } }
+  {
+    auth: { autoRefreshToken: false, persistSession: false },
+    db:   { schema: "public" },
+    global: {
+      headers: {
+        // Tell Supabase to prefer minimal response headers to reduce payload size
+        "Accept-Profile": "public",
+        "Content-Profile": "public",
+      },
+    },
+  }
 );

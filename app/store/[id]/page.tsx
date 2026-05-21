@@ -5,6 +5,9 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { StoreContent } from "@/components/store/StoreContent";
 import type { Product, Review, Store } from "@/lib/types";
 
+// Cache store pages for 60 seconds
+export const revalidate = 60;
+
 // ── Data fetching ─────────────────────────────────────────
 async function getStore(slug: string) {
   const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);

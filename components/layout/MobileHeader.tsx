@@ -12,16 +12,16 @@ export default function MobileHeader() {
   const [loggedIn, setLoggedIn]   = useState(false);
 
   useEffect(() => {
-    fetch("/api/auth/session")
-      .then(r => r.json())
-      .then(j => {
-        if (j.success) {
-          setLoggedIn(true);
-          fetch("/api/notifications")
-            .then(r => r.json())
-            .then(n => { if (n.success) setUnread(n.unread ?? 0); });
-        }
-      });
+    // Fire both requests in parallel — no waterfall
+    Promise.all([
+      fetch("/api/auth/session").then(r => r.json()),
+      fetch("/api/notifications").then(r => r.json()),
+    ]).then(([session, notifs]) => {
+      if (session.success) {
+        setLoggedIn(true);
+        if (notifs.success) setUnread(notifs.unread ?? 0);
+      }
+    }).catch(() => {});
   }, []);
 
   function handleSearch(e: React.FormEvent) {

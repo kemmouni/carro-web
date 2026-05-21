@@ -11,6 +11,9 @@ import { ProductCard }           from "@/components/ui/ProductCard";
 import { RecentlyViewedTracker } from "@/components/product/RecentlyViewedTracker";
 import type { Product }          from "@/lib/types";
 
+// Cache individual product pages for 30 seconds
+export const revalidate = 30;
+
 // ── Data fetching ─────────────────────────────────────────
 async function getProduct(id: string) {
   const { data, error } = await supabaseAdmin

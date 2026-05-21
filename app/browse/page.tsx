@@ -5,7 +5,8 @@ import { CategoryCard } from "@/components/ui/CategoryCard";
 import { BrandLogo }    from "@/components/ui/BrandLogo";
 import type { Category, Brand } from "@/lib/types";
 
-export const dynamic = "force-dynamic"; // always fetch fresh data
+// Categories and brands don't change often — cache for 5 minutes
+export const revalidate = 300;
 
 export const metadata = { title: "Browse Parts — Carro Qatar" };
 

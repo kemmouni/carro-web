@@ -13,9 +13,10 @@ interface ProductCardProps {
   product: Product;
   variant?: "grid" | "list" | "compact";
   className?: string;
+  priority?: boolean; // pass true for above-the-fold cards to preload image
 }
 
-export function ProductCard({ product, variant = "grid", className }: ProductCardProps) {
+export function ProductCard({ product, variant = "grid", className, priority = false }: ProductCardProps) {
   const [wishlisted, setWishlisted] = useState(false);
   const imgUrl = primaryImage(product.images);
 
@@ -32,6 +33,7 @@ export function ProductCard({ product, variant = "grid", className }: ProductCar
           src={imgUrl}
           alt={product.title}
           fill
+          priority={priority}
           className="object-cover transition-transform duration-300 group-hover:scale-[1.04]"
           sizes="(max-width:768px) 50vw, (max-width:1200px) 33vw, 25vw"
         />
