@@ -6,8 +6,9 @@ export const dynamic = "force-dynamic";
 export default async function AdminProductsPage() {
   const { data } = await supabaseAdmin
     .from("products")
-    .select(`id, title, price, condition, isActive, isFeatured, approvalStatus, createdAt,
-             category:categories(name),
+    .select(`id, title, price, currency, condition, brand, carMake, carModel,
+             description, isActive, isFeatured, approvalStatus, "listingType", createdAt,
+             category:categories(id, name, slug),
              store:stores(id, name, slug),
              images:product_images(url, isPrimary, sortOrder)`)
     .order("createdAt", { ascending: false });

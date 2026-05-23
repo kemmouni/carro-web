@@ -8,9 +8,24 @@ import { cn, formatPrice, timeAgo } from "@/lib/utils";
 import { ConditionBadge } from "@/components/ui/Badge";
 import { StarRating } from "@/components/ui/StarRating";
 import type { Product, Category } from "@/lib/types";
+import { SERVICE_CATEGORIES, CAR_BODY_TYPES, type ListingType } from "@/lib/listing-types";
 
 const CAR_MAKES  = ["Toyota", "Nissan", "BMW", "Mercedes-Benz", "Lexus", "Honda", "KIA", "Hyundai", "Ford", "Chevrolet", "Audi", "Volkswagen"];
 const CONDITIONS = [{ value: "NEW", label: "New" }, { value: "LIKE_NEW", label: "Like New" }, { value: "USED", label: "Used" }];
+
+// URL slug for ?type=... param
+function typeToSlug(t: ListingType | ""): string {
+  if (t === "SERVICE") return "services";
+  if (t === "CAR") return "cars";
+  if (t === "PART") return "parts";
+  return "";
+}
+function slugToType(s: string | null): ListingType | "" {
+  if (s === "services") return "SERVICE";
+  if (s === "cars") return "CAR";
+  if (s === "parts") return "PART";
+  return "";
+}
 
 // ── Listing card ───────────────────────────────────────────
 function ListingCard({ product: p }: { product: Product }) {
@@ -77,6 +92,9 @@ function SearchContent() {
 
   // Filters from URL
   const [q,         setQ]         = useState(searchParams.get("q")         ?? "");
+  const [type,      setType]      = useState<ListingType | "">(slugToType(searchParams.get("type")));
+  const [service,   setService]   = useState(searchParams.get("service")   ?? "");
+  const [body,      setBody]      = useState(searchParams.get("body")      ?? "");
   const [category,  setCategory]  = useState(searchParams.get("category")  ?? "");
   const [carMake,   setCarMake]   = useState(searchParams.get("carMake")   ?? "");
   const [carModel,  setCarModel]  = useState(searchParams.get("carModel")  ?? "");
@@ -107,6 +125,9 @@ function SearchContent() {
     setLoading(true);
     const params = new URLSearchParams();
     if (q)         params.set("q", q);
+    if (type)      params.set("type", typeToSlug(type));
+    if (service)   params.set("service", service);
+    if (body)      params.set("body", body);
     if (category)  params.set("category", category);
     if (carMake)   params.set("carMake", carMake);
     if (carModel)  params.set("carModel", carModel);
@@ -130,7 +151,7 @@ function SearchContent() {
     } finally {
       setLoading(false);
     }
-  }, [q, category, carMake, carModel, condition, minPrice, maxPrice, sort, page]);
+  }, [q, type, service, body, category, carMake, carModel, condition, minPrice, maxPrice, sort, page]);
 
   useEffect(() => { fetchProducts(); }, [fetchProducts]);
 
@@ -138,6 +159,9 @@ function SearchContent() {
   function applyFilters() {
     const params = new URLSearchParams();
     if (q)         params.set("q",        q);
+    if (type)      params.set("type",     typeToSlug(type));
+    if (service)   params.set("service",  service);
+    if (body)      params.set("body",     body);
     if (category)  params.set("category", category);
     if (carMake)   params.set("carMake",  carMake);
     if (carModel)  params.set("carModel", carModel);
@@ -151,16 +175,32 @@ function SearchContent() {
   }
 
   function clearAll() {
-    setQ(""); setCategory(""); setCarMake(""); setCarModel("");
+    setQ(""); setType(""); setService(""); setBody("");
+    setCategory(""); setCarMake(""); setCarModel("");
     setCondition(""); setMinPrice(""); setMaxPrice(""); setSort("newest");
     setPage(1);
     router.push("/search", { scroll: false });
   }
 
-  const hasFilters = !!(q || category || carMake || carModel || condition || minPrice || maxPrice);
+  // Auto-apply filter when type/service/body changes (clearing type-specific subfilters)
+  function changeType(newType: ListingType | "") {
+    setType(newType);
+    setService(""); setBody(""); setCategory(""); setCarMake(""); setCarModel("");
+    setCondition("");
+    setPage(1);
+  }
+
+  const hasFilters = !!(q || type || service || body || category || carMake || carModel || condition || minPrice || maxPrice);
+
+  const serviceName = SERVICE_CATEGORIES.find((s) => s.slug === service)?.name ?? service;
+  const bodyName = CAR_BODY_TYPES.find((b) => b.slug === body)?.name ?? body;
+  const typeName = type === "PART" ? "Parts" : type === "SERVICE" ? "Services" : type === "CAR" ? "Cars" : "";
 
   const activeTags = [
     q        && { label: q,         clear: () => setQ("") },
+    typeName && { label: typeName,  clear: () => changeType("") },
+    service  && { label: serviceName,  clear: () => setService("") },
+    body     && { label: bodyName,  clear: () => setBody("") },
     category && { label: categories.find((c) => c.slug === category)?.name ?? category, clear: () => setCategory("") },
     carMake  && { label: carMake,   clear: () => setCarMake("") },
     carModel && { label: carModel,  clear: () => setCarModel("") },
@@ -179,6 +219,45 @@ function SearchContent() {
           </button>
         )}
       </div>
+
+      <FilterSection title="Listing Type">
+        <div className="space-y-2">
+          {[
+            { id: "" as const,        label: "All listings" },
+            { id: "PART" as const,    label: "Parts" },
+            { id: "SERVICE" as const, label: "Services" },
+            { id: "CAR" as const,     label: "Cars for Sale" },
+          ].map((t) => (
+            <label key={t.id || "all"} className="flex items-center gap-2.5 cursor-pointer">
+              <input type="radio" name="ltype" checked={type === t.id} onChange={() => changeType(t.id)} className="accent-brand-orange" />
+              <span className={cn("text-[13px]", type === t.id ? "text-white font-semibold" : "text-gray-400")}>{t.label}</span>
+            </label>
+          ))}
+        </div>
+      </FilterSection>
+
+      {/* Type-specific sub-filter */}
+      {type === "SERVICE" && (
+        <FilterSection title="Service">
+          <select className="input w-full text-[13px]" value={service} onChange={(e) => setService(e.target.value)}>
+            <option value="">All services</option>
+            {SERVICE_CATEGORIES.map((s) => (
+              <option key={s.slug} value={s.slug}>{s.name}</option>
+            ))}
+          </select>
+        </FilterSection>
+      )}
+
+      {type === "CAR" && (
+        <FilterSection title="Body Type">
+          <select className="input w-full text-[13px]" value={body} onChange={(e) => setBody(e.target.value)}>
+            <option value="">All body types</option>
+            {CAR_BODY_TYPES.map((b) => (
+              <option key={b.slug} value={b.slug}>{b.name}</option>
+            ))}
+          </select>
+        </FilterSection>
+      )}
 
       <FilterSection title="Category">
         <div className="space-y-2">
@@ -298,7 +377,21 @@ function SearchContent() {
           <div className="flex items-start justify-between mb-4 gap-4">
             <div>
               <h1 className="text-[22px] font-black">
-                {q ? `"${q}"` : category ? (categories.find((c) => c.slug === category)?.name ?? "Parts") : "All Listings"}
+                {q
+                  ? `"${q}"`
+                  : service
+                    ? serviceName
+                    : body
+                      ? bodyName
+                      : category
+                        ? (categories.find((c) => c.slug === category)?.name ?? "Listings")
+                        : type === "SERVICE"
+                          ? "Available Services"
+                          : type === "CAR"
+                            ? "Cars for Sale"
+                            : type === "PART"
+                              ? "Auto Parts"
+                              : "All Listings"}
               </h1>
               <p className="text-[13px] text-gray-400 mt-0.5">
                 {loading ? "Loading…" : `${total.toLocaleString()} result${total !== 1 ? "s" : ""}`}

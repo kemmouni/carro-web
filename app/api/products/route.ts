@@ -19,6 +19,15 @@ export async function GET(req: NextRequest) {
     const featured  = searchParams.get("featured") === "true" ? true : null;
     const storeId   = searchParams.get("storeId");
     const sort      = searchParams.get("sort") ?? "newest";
+    // Listing-type aware filters
+    const typeRaw   = searchParams.get("type");
+    const type      = typeRaw === "services" ? "SERVICE"
+                    : typeRaw === "cars"     ? "CAR"
+                    : typeRaw === "parts"    ? "PART"
+                    : (typeRaw === "PART" || typeRaw === "SERVICE" || typeRaw === "CAR") ? typeRaw
+                    : null;
+    const service   = searchParams.get("service"); // service slug -> brand column
+    const body      = searchParams.get("body");    // car body slug -> brand column
 
     let query = supabaseAdmin
       .from("products")
@@ -42,6 +51,16 @@ export async function GET(req: NextRequest) {
     if (minPrice !== null) query = query.gte("price", minPrice);
     if (maxPrice !== null) query = query.lte("price", maxPrice);
     if (carYear)   query = query.lte("carYear", carYear).gte("carYearTo", carYear);
+
+    // Listing-type filtering (PART rows may have null listingType for legacy data)
+    if (type === "PART") {
+      query = query.or('"listingType".eq.PART,"listingType".is.null');
+    } else if (type) {
+      query = query.eq("listingType", type);
+    }
+    // Services + Cars reuse `brand` column for category slug
+    if (service) query = query.eq("brand", service);
+    if (body)    query = query.eq("brand", body);
 
     // Filter by category slug
     if (category) {

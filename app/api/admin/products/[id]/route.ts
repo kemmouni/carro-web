@@ -37,8 +37,22 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       updates = { isFeatured: true };
     } else if (action === "unfeature") {
       updates = { isFeatured: false };
+    } else if (action === "update") {
+      // Admin edit modal — accept arbitrary editable fields
+      const fields = (body.fields ?? {}) as Record<string, unknown>;
+      const allowed = [
+        "title", "price", "currency", "condition", "brand",
+        "carMake", "carModel", "description",
+        "isActive", "isFeatured", "approvalStatus", "listingType",
+      ];
+      for (const key of allowed) {
+        if (key in fields) updates[key] = fields[key];
+      }
+      if (Object.keys(updates).length === 0) {
+        return NextResponse.json({ success: false, error: "No editable fields provided" }, { status: 400 });
+      }
     } else {
-      // Generic update
+      // Generic update (legacy callers)
       const allowed = ["isActive", "isFeatured", "approvalStatus"];
       for (const key of allowed) { if (key in body) updates[key] = body[key]; }
     }
