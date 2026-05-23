@@ -84,7 +84,9 @@ export function HeroBanner() {
               alt="Auto Parts"
               fill
               className="object-cover object-left"
-              priority
+              priority={current === 0}
+              sizes="(max-width: 768px) 0vw, 52vw"
+              quality={80}
             />
           )}
         </div>
