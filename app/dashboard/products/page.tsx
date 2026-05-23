@@ -1,14 +1,21 @@
+import React from "react";
 import { supabaseAdmin } from "@/lib/supabase";
 import { getSellerStore } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { PlusCircle, Pencil, Eye, Package } from "lucide-react";
+import { PlusCircle, Pencil, Eye, Package, Wrench, Car } from "lucide-react";
 import { DeleteProductButton } from "@/components/dashboard/DeleteProductButton";
 
 const CONDITION_BADGE: Record<string, string> = {
   NEW:      "bg-green-500/15 text-green-400",
   LIKE_NEW: "bg-blue-500/15 text-blue-400",
   USED:     "bg-gray-500/15 text-gray-400",
+};
+
+const TYPE_BADGE: Record<string, { label: string; cls: string; icon: React.ElementType }> = {
+  PART:    { label: "Part",    cls: "text-blue-400 bg-blue-400/10",   icon: Package },
+  SERVICE: { label: "Service", cls: "text-purple-400 bg-purple-400/10", icon: Wrench },
+  CAR:     { label: "Car",     cls: "text-green-400 bg-green-400/10", icon: Car },
 };
 
 export default async function DashboardProductsPage() {
@@ -54,6 +61,7 @@ export default async function DashboardProductsPage() {
             <thead>
               <tr className="border-b border-dark-border">
                 <th className="text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider px-5 py-3.5">Product</th>
+                <th className="text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider px-4 py-3.5 hidden sm:table-cell">Type</th>
                 <th className="text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider px-4 py-3.5 hidden md:table-cell">Category</th>
                 <th className="text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider px-4 py-3.5">Price</th>
                 <th className="text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider px-4 py-3.5 hidden lg:table-cell">Condition</th>
@@ -67,6 +75,7 @@ export default async function DashboardProductsPage() {
                 const product = p as unknown as {
                   id: string; title: string; price: number; originalPrice?: number;
                   condition: string; isActive: boolean; viewCount: number;
+                  listingType?: string;
                   category: { name: string };
                   images: Array<{ url: string }>;
                 };
@@ -93,6 +102,19 @@ export default async function DashboardProductsPage() {
                           )}
                         </div>
                       </div>
+                    </td>
+
+                    {/* Type badge */}
+                    <td className="px-4 py-3.5 hidden sm:table-cell">
+                      {(() => {
+                        const t = TYPE_BADGE[product.listingType ?? "PART"] ?? TYPE_BADGE.PART;
+                        const Icon = t.icon;
+                        return (
+                          <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-full ${t.cls}`}>
+                            <Icon size={10} />{t.label}
+                          </span>
+                        );
+                      })()}
                     </td>
 
                     {/* Category */}

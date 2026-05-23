@@ -3,13 +3,15 @@
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { Heart, MessageCircle, Phone, Copy, ShoppingBag } from "lucide-react";
+import { Heart, MessageCircle, Phone, Copy, ShoppingBag, Tag, Calendar } from "lucide-react";
 import { cn, formatPrice } from "@/lib/utils";
 import { ConditionBadge } from "@/components/ui/Badge";
 import { toast } from "sonner";
 import type { Condition } from "@/lib/types";
 
-const OrderModal = dynamic(() => import("@/components/product/OrderModal"), { ssr: false });
+const OrderModal   = dynamic(() => import("@/components/product/OrderModal"),  { ssr: false });
+const OfferModal   = dynamic(() => import("@/components/product/OfferModal"),  { ssr: false });
+const BookingModal = dynamic(() => import("@/components/product/BookingModal"), { ssr: false });
 
 interface Props {
   productId:    string;
@@ -22,6 +24,7 @@ interface Props {
   storeSlug:    string;
   storeName:    string;
   storePhone?:  string;
+  listingType?: string;
 }
 
 function buildWhatsApp(phone: string, title: string) {
@@ -32,11 +35,14 @@ function buildWhatsApp(phone: string, title: string) {
 
 export function ContactPanel({
   productId, title, price, originalPrice, currency, condition, partNumber,
-  storeSlug, storeName, storePhone,
+  storeSlug, storeName, storePhone, listingType,
 }: Props) {
   const [wishlisted, setWishlisted] = useState(false);
   const [wishlistLoading, setWishlistLoading] = useState(false);
-  const [orderOpen, setOrderOpen] = useState(false);
+  const [orderOpen,   setOrderOpen]   = useState(false);
+  const [offerOpen,   setOfferOpen]   = useState(false);
+  const [bookingOpen, setBookingOpen] = useState(false);
+  const isService = listingType === "SERVICE";
 
   // Check initial wishlist state
   useEffect(() => {
@@ -92,6 +98,22 @@ export function ContactPanel({
         onClose={() => setOrderOpen(false)}
       />
     )}
+    {offerOpen && (
+      <OfferModal
+        productId={productId}
+        title={title}
+        price={price}
+        currency={currency}
+        onClose={() => setOfferOpen(false)}
+      />
+    )}
+    {bookingOpen && (
+      <BookingModal
+        productId={productId}
+        title={title}
+        onClose={() => setBookingOpen(false)}
+      />
+    )}
     <div className="space-y-4">
       {/* Info card */}
       <div className="card p-5">
@@ -144,14 +166,34 @@ export function ContactPanel({
         </div>
       </Link>
 
-      {/* Order button */}
-      <button
-        onClick={() => setOrderOpen(true)}
-        className="w-full h-12 bg-brand-orange hover:bg-brand-orange-hover text-white rounded-xl font-bold text-[14px] flex items-center justify-center gap-2.5 transition-colors"
-      >
-        <ShoppingBag size={16} />
-        Place Order (COD)
-      </button>
+      {/* Action buttons */}
+      {isService ? (
+        <button
+          onClick={() => setBookingOpen(true)}
+          className="w-full h-12 bg-brand-orange hover:bg-brand-orange-hover text-white rounded-xl font-bold text-[14px] flex items-center justify-center gap-2.5 transition-colors"
+        >
+          <Calendar size={16} />
+          Book Appointment
+        </button>
+      ) : (
+        <>
+          <button
+            onClick={() => setOrderOpen(true)}
+            className="w-full h-12 bg-brand-orange hover:bg-brand-orange-hover text-white rounded-xl font-bold text-[14px] flex items-center justify-center gap-2.5 transition-colors"
+          >
+            <ShoppingBag size={16} />
+            Place Order (COD)
+          </button>
+
+          <button
+            onClick={() => setOfferOpen(true)}
+            className="w-full h-11 bg-transparent border border-brand-orange text-brand-orange hover:bg-brand-orange hover:text-white rounded-xl font-bold text-[13px] flex items-center justify-center gap-2 transition-colors"
+          >
+            <Tag size={14} />
+            Make an Offer
+          </button>
+        </>
+      )}
 
       {/* Contact buttons */}
       <div className="space-y-3">

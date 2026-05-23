@@ -7,6 +7,7 @@ import { ProductGallery }        from "@/components/product/ProductGallery";
 import { ContactPanel }          from "@/components/product/ContactPanel";
 import InquiryForm               from "@/components/product/InquiryForm";
 import CompareButton             from "@/components/product/CompareButton";
+import { ReportButton }          from "@/components/product/ReportButton";
 import { ProductCard }           from "@/components/ui/ProductCard";
 import { RecentlyViewedTracker } from "@/components/product/RecentlyViewedTracker";
 import type { Product }          from "@/lib/types";
@@ -160,6 +161,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             storeSlug={store.slug}
             storeName={store.name}
             storePhone={store.phone}
+            listingType={(p as unknown as { listingType?: string }).listingType}
           />
 
           <InquiryForm
@@ -168,7 +170,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             productTitle={p.title}
           />
 
-          <div className="flex justify-end">
+          <div className="flex items-center justify-between">
+            <ReportButton productId={p.id} />
             <CompareButton productId={p.id} />
           </div>
 

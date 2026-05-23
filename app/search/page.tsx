@@ -406,6 +406,7 @@ function SearchContent() {
               <option value="price_asc">Price: Low to High</option>
               <option value="price_desc">Price: High to Low</option>
               <option value="views">Most Viewed</option>
+              <option value="deals">Special Offers</option>
             </select>
           </div>
 

@@ -4,7 +4,7 @@ import { Facebook, Instagram, Youtube, Twitter } from "lucide-react";
 const LINKS = {
   SHOP:    [["All Categories","/browse"],["New Arrivals","/search?sort=newest"],["Best Sellers","/search?sort=popular"],["Special Offers","/search?sort=deals"]],
   COMPANY: [["About Us","/about"],["Contact Us","/contact"],["How It Works","/how-it-works"],["Careers","/careers"]],
-  SUPPORT: [["Help Center","/help"],["Shipping & Delivery","/shipping"],["Returns & Refunds","/returns"],["Terms & Conditions","/terms"]],
+  SUPPORT: [["Help Center","/help"],["Shipping & Delivery","/shipping"],["Returns & Refunds","/returns"],["Terms & Conditions","/terms"],["Privacy Policy","/privacy"]],
 };
 
 export function Footer() {
@@ -25,13 +25,13 @@ export function Footer() {
             </p>
             <div className="flex gap-2">
               {[
-                { Icon: Facebook,  href: "#" },
-                { Icon: Instagram, href: "#" },
-                { Icon: Twitter,   href: "#" },
-                { Icon: Youtube,   href: "#" },
-              ].map(({ Icon, href }) => (
+                { Icon: Facebook,  name: "facebook",  href: "#" },
+                { Icon: Instagram, name: "instagram", href: "#" },
+                { Icon: Twitter,   name: "twitter",   href: "#" },
+                { Icon: Youtube,   name: "youtube",   href: "#" },
+              ].map(({ Icon, name, href }) => (
                 <a
-                  key={href}
+                  key={name}
                   href={href}
                   className="w-9 h-9 flex items-center justify-center rounded-lg bg-dark-secondary border border-dark-border text-gray-400 hover:bg-brand-orange hover:border-brand-orange hover:text-white transition-all duration-200"
                 >
@@ -83,7 +83,11 @@ export function Footer() {
 
         {/* Bottom bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-dark-border">
-          <p className="text-[12px] text-gray-500">© 2024 Carro. All rights reserved.</p>
+          <div className="flex items-center gap-4">
+            <p className="text-[12px] text-gray-500">© 2025 Carro. All rights reserved.</p>
+            <a href="/terms" className="text-[12px] text-gray-500 hover:text-gray-300 transition-colors">Terms</a>
+            <a href="/privacy" className="text-[12px] text-gray-500 hover:text-gray-300 transition-colors">Privacy</a>
+          </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 text-[12px] text-gray-400 px-3 py-1.5 bg-dark-secondary border border-dark-border rounded-lg">
               🇶🇦 Doha, Qatar

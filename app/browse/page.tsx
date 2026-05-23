@@ -67,16 +67,41 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
       <div className="max-w-screen-xl mx-auto px-6 pt-10 pb-16 space-y-14">
 
         {/* ── PARTS: original category cards + brands + quick links ── */}
-        {type === "PART" && categories.length > 0 && (
-          <section>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="section-title">All Categories</h2>
-              <Link href="/search" className="orange-link text-[13px]">View all parts →</Link>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {categories.map((cat) => <CategoryCard key={cat.id} category={cat} />)}
-            </div>
-          </section>
+        {type === "PART" && (
+          <>
+            {/* Find parts by car CTA */}
+            <a
+              href="/search/by-car"
+              className="block card p-5 flex items-center gap-4 hover:border-brand-orange transition-colors group"
+            >
+              <div className="w-12 h-12 rounded-xl bg-brand-orange/20 flex items-center justify-center flex-shrink-0">
+                <span className="text-brand-orange text-[22px]">🚗</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-[15px] font-bold text-white group-hover:text-brand-orange transition-colors">
+                  Find Parts by Car
+                </p>
+                <p className="text-[12px] text-gray-400 mt-0.5">
+                  Pick your make, model and year — see all compatible parts
+                </p>
+              </div>
+              <span className="text-gray-500 group-hover:text-brand-orange text-[12px] transition-colors">
+                Search →
+              </span>
+            </a>
+
+            {categories.length > 0 && (
+              <section>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="section-title">All Categories</h2>
+                  <Link href="/search" className="orange-link text-[13px]">View all parts →</Link>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {categories.map((cat) => <CategoryCard key={cat.id} category={cat} />)}
+                </div>
+              </section>
+            )}
+          </>
         )}
 
         {/* ── SERVICES: a card per service category ── */}

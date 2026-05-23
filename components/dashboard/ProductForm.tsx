@@ -6,6 +6,7 @@ import { Save, X, Upload, Plus, Trash2, Loader2, ImageIcon } from "lucide-react"
 import { cn } from "@/lib/utils";
 import { SERVICE_CATEGORIES, CAR_BODY_TYPES } from "@/lib/listing-types";
 import type { ListingType } from "@/lib/listing-types";
+import { VinDecoder } from "@/components/ui/VinDecoder";
 
 interface Category { id: string; name: string; }
 interface ProductData {
@@ -266,6 +267,15 @@ export function ProductForm({ categories, product, storeId, listingType: ltProp 
       {/* ── CAR FORM ── */}
       {type === "CAR" && (
         <>
+          <VinDecoder
+            onDecoded={(v) => {
+              if (v.make)  set("carMake",  v.make);
+              if (v.model) set("carModel", v.model);
+              if (v.year)  set("carYear",  v.year);
+              if (v.transmission) set("transmission", v.transmission.includes("Manual") ? "Manual" : "Automatic");
+              if (v.fuelType) set("fuel", v.fuelType.toLowerCase().includes("electric") ? "Electric" : v.fuelType.toLowerCase().includes("diesel") ? "Diesel" : v.fuelType.toLowerCase().includes("hybrid") ? "Hybrid" : "Petrol");
+            }}
+          />
           <div className="card p-6 space-y-4">
             <h2 className="text-[15px] font-bold text-white">Vehicle Information</h2>
 

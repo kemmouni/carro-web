@@ -6,20 +6,24 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, Package, ShoppingBag, Star,
   Settings, Store, PlusCircle, LogOut, Home, ChevronRight,
-  MessageSquare, BarChart2, Bell,
+  MessageSquare, BarChart2, Bell, Tag, Calendar, Zap, Gift,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV: Array<{ label: string; href: string; icon: React.ElementType }> = [
-  { label: "Overview",   href: "/dashboard",            icon: LayoutDashboard },
-  { label: "Products",   href: "/dashboard/products",   icon: Package },
+  { label: "Overview",       href: "/dashboard",                icon: LayoutDashboard },
+  { label: "Products",       href: "/dashboard/products",       icon: Package },
+  { label: "Orders",         href: "/dashboard/orders",         icon: ShoppingBag },
+  { label: "Offers",         href: "/dashboard/offers",         icon: Tag },
+  { label: "Bookings",       href: "/dashboard/bookings",       icon: Calendar },
   { label: "Messages",       href: "/dashboard/messages",       icon: MessageSquare },
   { label: "Notifications",  href: "/dashboard/notifications",  icon: Bell },
   { label: "Analytics",      href: "/dashboard/analytics",      icon: BarChart2 },
-  { label: "Orders",     href: "/dashboard/orders",     icon: ShoppingBag },
-  { label: "Reviews",    href: "/dashboard/reviews",    icon: Star },
-  { label: "Store",      href: "/dashboard/store",      icon: Store },
-  { label: "Settings",   href: "/dashboard/settings",   icon: Settings },
+  { label: "Reviews",        href: "/dashboard/reviews",        icon: Star },
+  { label: "Subscriptions",  href: "/dashboard/subscriptions",  icon: Zap },
+  { label: "Referral",       href: "/dashboard/referral",       icon: Gift },
+  { label: "Store",          href: "/dashboard/store",          icon: Store },
+  { label: "Settings",       href: "/dashboard/settings",       icon: Settings },
 ];
 
 interface Props {

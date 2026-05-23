@@ -1,7 +1,7 @@
 import { getSellerStore } from "@/lib/auth";
 import { redirect }       from "next/navigation";
 import { supabaseAdmin }  from "@/lib/supabase";
-import { Eye, MessageSquare, Package, TrendingUp, Star } from "lucide-react";
+import { Eye, MessageSquare, Package, TrendingUp, Tag, Calendar } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -29,15 +29,23 @@ export default async function AnalyticsPage() {
     if (m.productId) msgsByProduct[m.productId] = (msgsByProduct[m.productId] ?? 0) + 1;
   });
 
+  // Offers and bookings counts
+  const [{ count: offersCount }, { count: bookingsCount }] = await Promise.all([
+    supabaseAdmin.from("offers").select("id", { count: "exact", head: true }).eq("storeId", store.id),
+    supabaseAdmin.from("bookings").select("id", { count: "exact", head: true }).eq("storeId", store.id),
+  ]);
+
   const totalViews    = items.reduce((s: number, p: Record<string, unknown>) => s + ((p.viewCount as number) ?? 0), 0);
   const totalMessages = (messages ?? []).length;
   const activeCount   = items.filter((p: Record<string, unknown>) => p.isActive).length;
 
   const stats = [
-    { label: "Total Views",      value: totalViews.toLocaleString(),    icon: Eye,            color: "text-blue-400",   bg: "bg-blue-500/10" },
-    { label: "Total Inquiries",  value: totalMessages.toLocaleString(), icon: MessageSquare,  color: "text-green-400",  bg: "bg-green-500/10" },
-    { label: "Active Listings",  value: activeCount.toString(),         icon: Package,        color: "text-brand-orange", bg: "bg-brand-orange/10" },
-    { label: "Avg Views/Product",value: items.length ? Math.round(totalViews / items.length).toString() : "0", icon: TrendingUp, color: "text-purple-400", bg: "bg-purple-500/10" },
+    { label: "Total Views",      value: totalViews.toLocaleString(),          icon: Eye,            color: "text-blue-400",    bg: "bg-blue-500/10" },
+    { label: "Total Inquiries",  value: totalMessages.toLocaleString(),        icon: MessageSquare,  color: "text-green-400",   bg: "bg-green-500/10" },
+    { label: "Offers Received",  value: (offersCount ?? 0).toLocaleString(),   icon: Tag,            color: "text-yellow-400",  bg: "bg-yellow-500/10" },
+    { label: "Bookings",         value: (bookingsCount ?? 0).toLocaleString(), icon: Calendar,       color: "text-purple-400",  bg: "bg-purple-500/10" },
+    { label: "Active Listings",  value: activeCount.toString(),                icon: Package,        color: "text-brand-orange",bg: "bg-brand-orange/10" },
+    { label: "Avg Views/Product",value: items.length ? Math.round(totalViews / items.length).toString() : "0", icon: TrendingUp, color: "text-cyan-400", bg: "bg-cyan-500/10" },
   ];
 
   return (
@@ -48,7 +56,7 @@ export default async function AnalyticsPage() {
       </div>
 
       {/* Stats grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
         {stats.map(({ label, value, icon: Icon, color, bg }) => (
           <div key={label} className="card p-5">
             <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center mb-3`}>
