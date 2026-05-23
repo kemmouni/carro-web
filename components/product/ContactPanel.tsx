@@ -1,12 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import { Heart, MessageCircle, Phone, Copy } from "lucide-react";
+import { Heart, MessageCircle, Phone, Copy, ShoppingBag } from "lucide-react";
 import { cn, formatPrice } from "@/lib/utils";
 import { ConditionBadge } from "@/components/ui/Badge";
 import { toast } from "sonner";
 import type { Condition } from "@/lib/types";
+
+const OrderModal = dynamic(() => import("@/components/product/OrderModal"), { ssr: false });
 
 interface Props {
   productId:    string;
@@ -33,6 +36,7 @@ export function ContactPanel({
 }: Props) {
   const [wishlisted, setWishlisted] = useState(false);
   const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [orderOpen, setOrderOpen] = useState(false);
 
   // Check initial wishlist state
   useEffect(() => {
@@ -78,6 +82,16 @@ export function ContactPanel({
   }
 
   return (
+    <>
+    {orderOpen && (
+      <OrderModal
+        productId={productId}
+        title={title}
+        price={price}
+        currency={currency}
+        onClose={() => setOrderOpen(false)}
+      />
+    )}
     <div className="space-y-4">
       {/* Info card */}
       <div className="card p-5">
@@ -130,6 +144,15 @@ export function ContactPanel({
         </div>
       </Link>
 
+      {/* Order button */}
+      <button
+        onClick={() => setOrderOpen(true)}
+        className="w-full h-12 bg-brand-orange hover:bg-brand-orange-hover text-white rounded-xl font-bold text-[14px] flex items-center justify-center gap-2.5 transition-colors"
+      >
+        <ShoppingBag size={16} />
+        Place Order (COD)
+      </button>
+
       {/* Contact buttons */}
       <div className="space-y-3">
         {storePhone ? (
@@ -164,5 +187,6 @@ export function ContactPanel({
         )}
       </div>
     </div>
+    </>
   );
 }

@@ -6,15 +6,16 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, Package, ShoppingBag, Star,
   Settings, Store, PlusCircle, LogOut, Home, ChevronRight,
-  MessageSquare, BarChart2,
+  MessageSquare, BarChart2, Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV: Array<{ label: string; href: string; icon: React.ElementType }> = [
   { label: "Overview",   href: "/dashboard",            icon: LayoutDashboard },
   { label: "Products",   href: "/dashboard/products",   icon: Package },
-  { label: "Messages",   href: "/dashboard/messages",   icon: MessageSquare },
-  { label: "Analytics",  href: "/dashboard/analytics",  icon: BarChart2 },
+  { label: "Messages",       href: "/dashboard/messages",       icon: MessageSquare },
+  { label: "Notifications",  href: "/dashboard/notifications",  icon: Bell },
+  { label: "Analytics",      href: "/dashboard/analytics",      icon: BarChart2 },
   { label: "Orders",     href: "/dashboard/orders",     icon: ShoppingBag },
   { label: "Reviews",    href: "/dashboard/reviews",    icon: Star },
   { label: "Store",      href: "/dashboard/store",      icon: Store },

@@ -27,6 +27,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         categoryId:    fields.categoryId,
         isActive:      fields.isActive,
         isFeatured:    fields.isFeatured,
+        listingType:   fields.listingType ?? undefined,
         updatedAt:     new Date().toISOString(),
       })
       .eq("id", id)
