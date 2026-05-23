@@ -1,14 +1,19 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ChevronRight } from "lucide-react";
-import { HeroBanner }      from "@/components/sections/HeroBanner";
-import { QuickCategories } from "@/components/sections/QuickCategories";
-import { TrustBadges }     from "@/components/sections/TrustBadges";
-import { RecentlyViewed }  from "@/components/sections/RecentlyViewed";
-import { ProductCard }     from "@/components/ui/ProductCard";
-import { BrandLogo }       from "@/components/ui/BrandLogo";
-import { supabaseAdmin }   from "@/lib/supabase";
+import { HeroBanner }        from "@/components/sections/HeroBanner";
+import { ListingTypeTabs }   from "@/components/sections/ListingTypeTabs";
+import { TypedCategories }   from "@/components/sections/TypedCategories";
+import { TrustBadges }       from "@/components/sections/TrustBadges";
+import { RecentlyViewed }    from "@/components/sections/RecentlyViewed";
+import { ProductCard }       from "@/components/ui/ProductCard";
+import { BrandLogo }         from "@/components/ui/BrandLogo";
+import { supabaseAdmin }     from "@/lib/supabase";
 import type { Product, Brand } from "@/lib/types";
+import {
+  listingTypeFromSlug,
+  type ListingType,
+} from "@/lib/listing-types";
 
 // Cache homepage for 60 seconds — products don't need to be real-time
 export const revalidate = 60;
@@ -32,21 +37,35 @@ function normalizeProduct(p: Record<string, unknown>): Product {
   } as unknown as Product;
 }
 
-async function getFeaturedProducts(): Promise<Product[]> {
-  const { data } = await supabaseAdmin
+/**
+ * Add listingType filter. Treat null (legacy rows) as PART for back-compat,
+ * matching mobile's behavior.
+ */
+function applyTypeFilter<T extends { or: (q: string) => T; eq: (col: string, v: unknown) => T }>(
+  q: T,
+  type: ListingType,
+): T {
+  if (type === "PART") return q.or('"listingType".eq.PART,"listingType".is.null');
+  return q.eq('"listingType"', type);
+}
+
+async function getFeaturedProducts(type: ListingType): Promise<Product[]> {
+  let q = supabaseAdmin
     .from("products")
     .select('*, category:categories(id,name,slug), store:stores(id,name,slug,city,"isVerified"), images:product_images(id,url,"isPrimary","sortOrder")')
-    .eq("isActive", true).eq("isFeatured", true)
-    .order("createdAt", { ascending: false }).limit(8);
+    .eq("isActive", true).eq("isFeatured", true);
+  q = applyTypeFilter(q, type);
+  const { data } = await q.order("createdAt", { ascending: false }).limit(8);
   return (data ?? []).map(normalizeProduct);
 }
 
-async function getNewArrivals(): Promise<Product[]> {
-  const { data } = await supabaseAdmin
+async function getNewArrivals(type: ListingType): Promise<Product[]> {
+  let q = supabaseAdmin
     .from("products")
     .select('*, category:categories(id,name,slug), store:stores(id,name,slug,city,"isVerified"), images:product_images(id,url,"isPrimary","sortOrder")')
-    .eq("isActive", true)
-    .order("createdAt", { ascending: false }).limit(6);
+    .eq("isActive", true);
+  q = applyTypeFilter(q, type);
+  const { data } = await q.order("createdAt", { ascending: false }).limit(6);
   return (data ?? []).map(normalizeProduct);
 }
 
@@ -75,8 +94,39 @@ function Section({ title, href, children }: { title: string; href: string; child
 }
 
 // ─── Page ─────────────────────────────────────────────────
-export default async function HomePage() {
-  const [featured, arrivals, popularBrands] = await Promise.all([getFeaturedProducts(), getNewArrivals(), getPopularBrands()]);
+type HomeProps = {
+  searchParams: Promise<{ type?: string }>;
+};
+
+export default async function HomePage({ searchParams }: HomeProps) {
+  const { type: typeSlug } = await searchParams;
+  const type = listingTypeFromSlug(typeSlug);
+
+  const [featured, arrivals, popularBrands] = await Promise.all([
+    getFeaturedProducts(type),
+    getNewArrivals(type),
+    getPopularBrands(),
+  ]);
+
+  // Adapt the "new arrivals" section title to the selected type
+  const arrivalsTitle =
+    type === "PART"
+      ? "New Arrivals"
+      : type === "SERVICE"
+      ? "Available Services"
+      : "Latest Cars for Sale";
+  const arrivalsHref =
+    type === "PART"
+      ? "/search?sort=newest"
+      : type === "SERVICE"
+      ? "/search?type=services&sort=newest"
+      : "/search?type=cars&sort=newest";
+  const featuredHref =
+    type === "PART"
+      ? "/search?featured=true"
+      : type === "SERVICE"
+      ? "/search?type=services&featured=true"
+      : "/search?type=cars&featured=true";
 
   return (
     <>
@@ -85,15 +135,18 @@ export default async function HomePage() {
         <HeroBanner />
       </div>
 
-      {/* Categories — circles on mobile, bar on desktop */}
-      <QuickCategories />
+      {/* Listing type switcher (Parts / Services / Cars) */}
+      <ListingTypeTabs active={type} />
+
+      {/* Categories — content swaps per selected type */}
+      <TypedCategories type={type} />
 
       {/* ── MOBILE CONTENT ── */}
       <div className="md:hidden px-4 pt-2 pb-4 space-y-6">
 
-        {/* Featured Products — horizontal scroll */}
+        {/* Featured — horizontal scroll */}
         {featured.length > 0 && (
-          <Section title="Featured" href="/search?featured=true">
+          <Section title="Featured" href={featuredHref}>
             <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
               {featured.map((p) => (
                 <ProductCard key={p.id} product={p} className="min-w-[155px] w-[155px] flex-shrink-0" />
@@ -102,8 +155,8 @@ export default async function HomePage() {
           </Section>
         )}
 
-        {/* New Arrivals — 2-column grid */}
-        <Section title="New Arrivals" href="/search?sort=newest">
+        {/* New Arrivals / Available Services / Latest Cars — 2-column grid */}
+        <Section title={arrivalsTitle} href={arrivalsHref}>
           {arrivals.length > 0 ? (
             <div className="grid grid-cols-2 gap-3">
               {arrivals.map((p, i) => (
@@ -149,15 +202,15 @@ export default async function HomePage() {
       {/* ── DESKTOP CONTENT ── */}
       <div className="hidden md:block max-w-screen-xl mx-auto px-6 pt-10">
 
-        <Section title="Featured Products" href="/search?featured=true">
+        <Section title="Featured" href={featuredHref}>
           <div className="flex gap-4 overflow-x-auto no-scrollbar pb-1">
             {featured.length > 0 ? featured.map((p) => (
               <ProductCard key={p.id} product={p} className="min-w-[220px] w-[220px] flex-shrink-0" />
-            )) : <p className="text-gray-500 text-sm py-4">No featured products yet.</p>}
+            )) : <p className="text-gray-500 text-sm py-4">No featured listings yet.</p>}
           </div>
         </Section>
 
-        <Section title="New Arrivals" href="/search?sort=newest">
+        <Section title={arrivalsTitle} href={arrivalsHref}>
           <div className="flex gap-4 overflow-x-auto no-scrollbar pb-1">
             {arrivals.length > 0 ? arrivals.map((p) => (
               <ProductCard key={p.id} product={p} variant="compact" className="min-w-[240px] flex-shrink-0" />
