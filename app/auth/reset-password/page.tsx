@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Lock, Eye, EyeOff, Car, CheckCircle, AlertCircle } from "lucide-react";
@@ -20,25 +20,20 @@ function ResetPasswordForm() {
   const [error, setError]           = useState("");
   const [tokenError, setTokenError] = useState(false);
 
-  // Supabase puts the access_token in the URL hash when redirecting.
-  // We need to exchange the code/token so the session is valid before updateUser.
+  // The /auth/callback route already exchanged the PKCE code server-side.
+  // We just verify there's an active session. If the link was invalid/expired,
+  // the ?error=invalid_link param will be set, or getUser() will return null.
   useEffect(() => {
-    const supabase = createSupabaseBrowserClient();
-
-    // Handle the PKCE code exchange (Supabase v2 / SSR package)
-    const code = searchParams.get("code");
-    if (code) {
-      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
-        if (error) setTokenError(true);
-      });
+    const errorParam = searchParams.get("error");
+    if (errorParam) {
+      setTokenError(true);
       return;
     }
 
-    // Fallback: hash-based token (older flow)
-    const hash = window.location.hash;
-    if (!hash) {
-      setTokenError(true);
-    }
+    const supabase = createSupabaseBrowserClient();
+    supabase.auth.getUser().then(({ data, error }) => {
+      if (error || !data.user) setTokenError(true);
+    });
   }, [searchParams]);
 
   async function handleSubmit(e: React.FormEvent) {
