@@ -9,6 +9,7 @@ import {
   MessageSquare, BarChart2, Bell, Tag, Calendar, Zap, Gift,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useNotifications } from "@/context/NotificationsContext";
 
 const NAV: Array<{ label: string; href: string; icon: React.ElementType }> = [
   { label: "Overview",       href: "/dashboard",                icon: LayoutDashboard },
@@ -34,6 +35,7 @@ interface Props {
 export function DashboardSidebar({ storeName, isVerified }: Props) {
   const pathname = usePathname();
   const router   = useRouter();
+  const { unreadCount } = useNotifications();
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -68,6 +70,9 @@ export function DashboardSidebar({ storeName, isVerified }: Props) {
       <nav className="flex-1 px-3 py-4 space-y-0.5">
         {NAV.map(({ label, href, icon: Icon }) => {
           const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+          const isNotifications = href === "/dashboard/notifications";
+          const badge = isNotifications && unreadCount > 0 ? unreadCount : 0;
+
           return (
             <Link
               key={href}
@@ -82,7 +87,12 @@ export function DashboardSidebar({ storeName, isVerified }: Props) {
             >
               <Icon size={16} />
               {label}
-              {active && <ChevronRight size={14} className="ml-auto" />}
+              {badge > 0 && (
+                <span className="ml-auto flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold animate-pulse">
+                  {badge > 99 ? "99+" : badge}
+                </span>
+              )}
+              {active && badge === 0 && <ChevronRight size={14} className="ml-auto" />}
             </Link>
           );
         })}
