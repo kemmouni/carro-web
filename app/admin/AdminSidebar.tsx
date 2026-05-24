@@ -2,16 +2,24 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Tag, Car, Package, Users, LogOut, Flag } from "lucide-react";
+import {
+  LayoutDashboard, Tag, Car, Package, Users, LogOut,
+  Flag, Store, ShoppingBag, Calendar, Bell, Settings,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { label: "Overview",   href: "/admin",            icon: LayoutDashboard },
-  { label: "Products",   href: "/admin/products",   icon: Package },
-  { label: "Reports",    href: "/admin/reports",    icon: Flag },
-  { label: "Users",      href: "/admin/users",       icon: Users },
-  { label: "Categories", href: "/admin/categories",  icon: Tag },
-  { label: "Brands",     href: "/admin/brands",      icon: Car },
+  { label: "Overview",      href: "/admin",               icon: LayoutDashboard },
+  { label: "Products",      href: "/admin/products",      icon: Package },
+  { label: "Orders",        href: "/admin/orders",        icon: ShoppingBag },
+  { label: "Bookings",      href: "/admin/bookings",      icon: Calendar },
+  { label: "Stores",        href: "/admin/stores",        icon: Store },
+  { label: "Users",         href: "/admin/users",         icon: Users },
+  { label: "Reports",       href: "/admin/reports",       icon: Flag },
+  { label: "Notify Users",  href: "/admin/notifications", icon: Bell },
+  { label: "Categories",    href: "/admin/categories",    icon: Tag },
+  { label: "Brands",        href: "/admin/brands",        icon: Car },
+  { label: "Settings",      href: "/admin/settings",      icon: Settings },
 ];
 
 export default function AdminSidebar({ adminName }: { adminName: string }) {
@@ -28,7 +36,7 @@ export default function AdminSidebar({ adminName }: { adminName: string }) {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-1">
+      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         {NAV.map(({ label, href, icon: Icon }) => {
           const active = pathname === href || (href !== "/admin" && pathname.startsWith(href));
           return (
