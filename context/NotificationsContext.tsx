@@ -29,11 +29,32 @@ interface NotificationsContextValue {
 }
 
 // ── Sound ─────────────────────────────────────────────────────────────────────
-function playNotificationSound() {
+// Shared AudioContext — created on first use, reused to avoid browser throttling
+let _audioCtx: AudioContext | null = null;
+
+function getAudioCtx(): AudioContext | null {
   try {
-    const AudioCtx =
-      window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    const ctx = new AudioCtx();
+    if (!_audioCtx || _audioCtx.state === "closed") {
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      _audioCtx = new AudioCtx();
+    }
+    return _audioCtx;
+  } catch {
+    return null;
+  }
+}
+
+async function playNotificationSound() {
+  try {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+
+    // Browsers suspend AudioContext until a user gesture — resume it
+    if (ctx.state === "suspended") {
+      await ctx.resume();
+    }
 
     // Three-note ascending chime: A5 → C#6 → E6
     const tones = [
@@ -62,6 +83,19 @@ function playNotificationSound() {
   } catch {
     // AudioContext not available — silent fail
   }
+}
+
+// Unlock audio on first user interaction so polling-triggered sounds work
+if (typeof window !== "undefined") {
+  const unlock = () => {
+    getAudioCtx()?.resume().catch(() => {});
+    window.removeEventListener("click", unlock, true);
+    window.removeEventListener("keydown", unlock, true);
+    window.removeEventListener("touchstart", unlock, true);
+  };
+  window.addEventListener("click", unlock, true);
+  window.addEventListener("keydown", unlock, true);
+  window.addEventListener("touchstart", unlock, true);
 }
 
 // ── Type → icon/color mapping ─────────────────────────────────────────────────

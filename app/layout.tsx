@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/Footer";
 import MobileHeader from "@/components/layout/MobileHeader";
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import { Toaster } from "sonner";
+import { NotificationsProvider } from "@/context/NotificationsContext";
 
 // next/font downloads and self-hosts the font at build time.
 // Zero render-blocking network request to Google Fonts CDN.
@@ -50,19 +51,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="dns-prefetch" href="https://mqgequubhvrrgvkoipbg.supabase.co" />
       </head>
       <body className={`${inter.variable} ${inter.className}`}>
-        {/* Desktop navbar */}
-        <div className="hidden md:block">
-          <Navbar />
-        </div>
-        {/* Mobile header (replaces desktop navbar on small screens) */}
-        <MobileHeader />
-        <main className="min-h-screen pb-16 md:pb-0">{children}</main>
-        {/* Desktop footer */}
-        <div className="hidden md:block">
-          <Footer />
-        </div>
-        {/* Mobile bottom tab bar */}
-        <MobileBottomNav />
+        <NotificationsProvider>
+          {/* Desktop navbar */}
+          <div className="hidden md:block">
+            <Navbar />
+          </div>
+          {/* Mobile header (replaces desktop navbar on small screens) */}
+          <MobileHeader />
+          <main className="min-h-screen pb-16 md:pb-0">{children}</main>
+          {/* Desktop footer */}
+          <div className="hidden md:block">
+            <Footer />
+          </div>
+          {/* Mobile bottom tab bar */}
+          <MobileBottomNav />
+        </NotificationsProvider>
         <Toaster
           theme="dark"
           position="top-right"

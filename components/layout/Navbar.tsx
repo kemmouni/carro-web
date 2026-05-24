@@ -10,11 +10,12 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import LanguageSwitcher from "@/components/ui/LanguageSwitcher";
+import { useNotifications } from "@/context/NotificationsContext";
 
 const NAV_LINKS = [
   { href: "/browse",            label: "Browse"  },
   { href: "/search",            label: "Search"  },
-  { href: "/search?sort=deals", label: "Deals"   },
+  { href: "/deals",             label: "Deals"   },
 ];
 
 interface SessionUser {
@@ -37,36 +38,22 @@ export function Navbar() {
   // Auth state
   const [user,       setUser]       = useState<SessionUser | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [notifOpen,   setNotifOpen]   = useState(false);
-  const [notifications, setNotifications] = useState<Array<{ id: string; title: string; message: string; link: string | null; isRead: boolean; createdAt: string }>>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Use shared notifications context (polls every 15 s, plays sound on new)
+  const { unreadCount, notifications, markAllRead } = useNotifications();
 
   useEffect(() => {
     fetch("/api/auth/session")
       .then((r) => r.json())
-      .then((j) => {
-        if (j.success) {
-          setUser(j.data);
-          // Fetch notifications
-          fetch("/api/notifications")
-            .then((r) => r.json())
-            .then((n) => {
-              if (n.success) {
-                setNotifications(n.data ?? []);
-                setUnreadCount(n.unread ?? 0);
-              }
-            });
-        }
-      })
+      .then((j) => { if (j.success) setUser(j.data); })
       .finally(() => setAuthLoading(false));
   }, []);
 
   async function markNotificationsRead() {
     if (!unreadCount) return;
-    await fetch("/api/notifications", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-    setUnreadCount(0);
+    await markAllRead();
   }
 
   // Close dropdowns on outside click
