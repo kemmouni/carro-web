@@ -56,6 +56,29 @@ export async function POST(req: NextRequest) {
     const { data: existing } = await supabaseAdmin.from("stores").select("id").eq("userId", user.id).maybeSingle();
     if (existing) return NextResponse.json({ success: false, error: "You already have a store" }, { status: 400 });
 
+    // Ensure user row exists in public.users (FK requirement).
+    // Users who sign up via Google/Apple or who were created via Supabase admin
+    // may exist in auth.users but not in public.users — upsert fixes that.
+    const { data: existingUser } = await supabaseAdmin
+      .from("users")
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (!existingUser) {
+      const fallbackName = user.user_metadata?.full_name
+        ?? user.user_metadata?.name
+        ?? name.trim()
+        ?? user.email?.split("@")[0]
+        ?? "User";
+      await supabaseAdmin.from("users").insert({
+        id:       user.id,
+        email:    user.email ?? "",
+        fullName: fallbackName,
+        role:     "SELLER",
+      });
+    }
+
     // Generate a unique slug
     const base = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
     const slug  = `${base}-${Math.random().toString(36).slice(2, 6)}`;

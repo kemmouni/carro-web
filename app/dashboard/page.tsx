@@ -33,7 +33,7 @@ async function getDashboardStats(storeId: string) {
 
 export default async function DashboardPage() {
   const store = await getSellerStore();
-  if (!store) redirect("/auth/login");
+  if (!store) redirect("/seller/setup");
 
   const stats = await getDashboardStats(store.id);
 
