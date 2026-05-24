@@ -22,7 +22,7 @@ async function getStats() {
     supabaseAdmin.from("product_reports").select("id", { count: "exact", head: true }).eq("status", "PENDING"),
     supabaseAdmin.from("bookings").select("id", { count: "exact", head: true }).eq("status", "PENDING"),
     supabaseAdmin.from("orders").select("id, totalAmount, status, createdAt, buyerName, store:stores(name)").order("createdAt", { ascending: false }).limit(5),
-    supabaseAdmin.from("users").select("id, name, email, role, createdAt").order("createdAt", { ascending: false }).limit(5),
+    supabaseAdmin.from("users").select("id, fullName, email, role, createdAt").order("createdAt", { ascending: false }).limit(5),
   ]);
 
   const totalRevenue = (orders.data ?? []).reduce((sum: number, o: { totalAmount?: number }) => sum + (o.totalAmount ?? 0), 0);
@@ -166,10 +166,10 @@ export default async function AdminPage() {
                 <div key={u.id} className="flex items-center justify-between py-2 border-b border-dark-border last:border-0">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-dark-input flex items-center justify-center text-[12px] font-bold text-brand-orange">
-                      {(u.name ?? u.email ?? "?")[0].toUpperCase()}
+                      {(u.fullName ?? u.email ?? "?")[0].toUpperCase()}
                     </div>
                     <div>
-                      <p className="text-[13px] font-semibold text-white">{u.name ?? "—"}</p>
+                      <p className="text-[13px] font-semibold text-white">{u.fullName ?? "—"}</p>
                       <p className="text-[11px] text-gray-500">{u.email}</p>
                     </div>
                   </div>

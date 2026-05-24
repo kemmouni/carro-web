@@ -7,7 +7,7 @@ import { Users, Search, Shield, ShieldOff, Ban, CheckCircle, Store } from "lucid
 interface AdminUser {
   id: string;
   email: string;
-  name: string | null;
+  fullName: string | null;
   role: string;
   isBanned: boolean;
   createdAt: string;
@@ -29,7 +29,7 @@ export default function UserManagementClient({ initialUsers }: { initialUsers: A
   const filtered = useMemo(() => {
     return users.filter((u) => {
       const q = search.toLowerCase();
-      const matchSearch = u.email.toLowerCase().includes(q) || (u.name ?? "").toLowerCase().includes(q);
+      const matchSearch = u.email.toLowerCase().includes(q) || (u.fullName ?? "").toLowerCase().includes(q);
       const matchFilter =
         filter === "ALL" ? true :
         filter === "BANNED" ? u.isBanned :
@@ -125,10 +125,10 @@ export default function UserManagementClient({ initialUsers }: { initialUsers: A
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-full bg-dark-input flex items-center justify-center flex-shrink-0 text-[13px] font-bold text-brand-orange">
-                        {(u.name ?? u.email)[0].toUpperCase()}
+                        {(u.fullName ?? u.email)[0].toUpperCase()}
                       </div>
                       <div>
-                        <p className="text-[13px] font-semibold text-white">{u.name ?? "—"}</p>
+                        <p className="text-[13px] font-semibold text-white">{u.fullName ?? "—"}</p>
                         <p className="text-[11px] text-gray-500">{u.email}</p>
                         {u.isBanned && <p className="text-[11px] text-red-400 font-semibold">BANNED</p>}
                       </div>

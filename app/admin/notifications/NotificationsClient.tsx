@@ -5,7 +5,7 @@ import { Bell, Send, Users, CheckCircle } from "lucide-react";
 
 interface User {
   id: string;
-  name: string | null;
+  fullName: string | null;
   email: string;
   role: string;
 }
@@ -117,7 +117,7 @@ export default function NotificationsClient({ users }: { users: User[] }) {
                   <option value="">— Choose a user —</option>
                   {users.map((u) => (
                     <option key={u.id} value={u.id}>
-                      {u.name ?? u.email} ({u.role})
+                      {u.fullName ?? u.email} ({u.role})
                     </option>
                   ))}
                 </select>

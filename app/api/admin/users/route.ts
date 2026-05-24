@@ -17,7 +17,7 @@ export async function GET() {
   try {
     const { data, error } = await supabaseAdmin
       .from("users")
-      .select(`id, email, name, role, isBanned, createdAt, store:stores(id, name, slug, isVerified)`)
+      .select(`id, email, fullName, role, isBanned, createdAt, store:stores(id, name, slug, isVerified)`)
       .order("createdAt", { ascending: false });
 
     if (error) throw error;

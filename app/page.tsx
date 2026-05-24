@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ChevronRight } from "lucide-react";
-import { HeroBanner }        from "@/components/sections/HeroBanner";
+import { HeroBanner, type BannerSlide } from "@/components/sections/HeroBanner";
 import { ListingTypeTabs }   from "@/components/sections/ListingTypeTabs";
 import { TypedCategories }   from "@/components/sections/TypedCategories";
 import { TrustBadges }       from "@/components/sections/TrustBadges";
@@ -69,6 +69,28 @@ async function getNewArrivals(type: ListingType): Promise<Product[]> {
   return (data ?? []).map(normalizeProduct);
 }
 
+async function getHeroBanners(): Promise<BannerSlide[]> {
+  try {
+    const { data } = await supabaseAdmin
+      .from("hero_banners")
+      .select("*")
+      .eq("isActive", true)
+      .order("sortOrder", { ascending: true });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return ((data ?? []) as any[]).map((r) => ({
+      id:       r.id,
+      title:    r.title,
+      subtitle: r.subtitle ?? null,
+      ctaText:  r.ctaText ?? null,
+      ctaLink:  r.ctaLink ?? null,
+      imageUrl: r.imageUrl ?? null,
+    }));
+  } catch {
+    // hero_banners table may not exist yet — fall back to empty (uses static slides)
+    return [];
+  }
+}
+
 async function getPopularBrands(): Promise<Brand[]> {
   const { data } = await supabaseAdmin
     .from("brands")
@@ -102,10 +124,11 @@ export default async function HomePage({ searchParams }: HomeProps) {
   const { type: typeSlug } = await searchParams;
   const type = listingTypeFromSlug(typeSlug);
 
-  const [featured, arrivals, popularBrands] = await Promise.all([
+  const [featured, arrivals, popularBrands, heroBanners] = await Promise.all([
     getFeaturedProducts(type),
     getNewArrivals(type),
     getPopularBrands(),
+    getHeroBanners(),
   ]);
 
   // Adapt the "new arrivals" section title to the selected type
@@ -132,7 +155,7 @@ export default async function HomePage({ searchParams }: HomeProps) {
     <>
       {/* Desktop hero — hidden on mobile */}
       <div className="hidden md:block">
-        <HeroBanner />
+        <HeroBanner slides={heroBanners} />
       </div>
 
       {/* Listing type switcher (Parts / Services / Cars) */}

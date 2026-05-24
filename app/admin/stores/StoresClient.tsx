@@ -16,7 +16,7 @@ interface AdminStore {
   isVerified: boolean;
   createdAt: string;
   productCount: number;
-  owner: { id: string; name: string | null; email: string } | null;
+  owner: { id: string; fullName: string | null; email: string } | null;
 }
 
 export default function StoresClient({ initialStores }: { initialStores: AdminStore[] }) {
@@ -31,7 +31,7 @@ export default function StoresClient({ initialStores }: { initialStores: AdminSt
       const matchSearch =
         s.name.toLowerCase().includes(q) ||
         (s.owner?.email ?? "").toLowerCase().includes(q) ||
-        (s.owner?.name ?? "").toLowerCase().includes(q);
+        (s.owner?.fullName ?? "").toLowerCase().includes(q);
       const matchFilter =
         filter === "ALL"        ? true :
         filter === "VERIFIED"   ? s.isVerified :
@@ -141,7 +141,7 @@ export default function StoresClient({ initialStores }: { initialStores: AdminSt
                     </div>
                   </td>
                   <td className="px-4 py-3.5 hidden md:table-cell">
-                    <p className="text-[13px] text-white">{s.owner?.name ?? "—"}</p>
+                    <p className="text-[13px] text-white">{s.owner?.fullName ?? "—"}</p>
                     <p className="text-[11px] text-gray-500">{s.owner?.email ?? "—"}</p>
                   </td>
                   <td className="px-4 py-3.5">

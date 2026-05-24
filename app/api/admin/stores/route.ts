@@ -19,7 +19,6 @@ export async function GET() {
       .select(`
         id, name, slug, description, phone, email, isVerified, createdAt,
         userId,
-        owner:users!stores_userId_fkey(id, name, email),
         products:products(id)
       `)
       .order("createdAt", { ascending: false });

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase";
-import { createSupabaseServerClient } from "@/lib/supabase";
+import { supabaseAdmin, createSupabaseServerClient } from "@/lib/supabase";
 
 async function requireAdmin() {
   const supabase = await createSupabaseServerClient();
@@ -18,28 +17,38 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const { id } = await params;
     const body = await req.json();
 
-    // Prevent admin from banning themselves
-    if (id === admin.id && body.isBanned === true) {
-      return NextResponse.json({ success: false, error: "Cannot ban yourself" }, { status: 400 });
-    }
-
-    const allowed = ["role", "isBanned"];
-    const updates: Record<string, unknown> = {};
+    const allowed = ["title", "subtitle", "ctaText", "ctaLink", "imageUrl", "isActive", "sortOrder"];
+    const updates: Record<string, unknown> = { updatedAt: new Date().toISOString() };
     for (const key of allowed) {
       if (key in body) updates[key] = body[key];
     }
 
     const { data, error } = await supabaseAdmin
-      .from("users")
+      .from("hero_banners")
       .update(updates)
       .eq("id", id)
-      .select("id, email, fullName, role, isBanned, createdAt")
+      .select("*")
       .single();
 
     if (error) throw error;
     return NextResponse.json({ success: true, data });
   } catch (err) {
-    console.error("[PUT /api/admin/users/[id]]", err);
+    console.error("[PUT /api/admin/banners/[id]]", err);
+    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const admin = await requireAdmin();
+  if (!admin) return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+
+  try {
+    const { id } = await params;
+    const { error } = await supabaseAdmin.from("hero_banners").delete().eq("id", id);
+    if (error) throw error;
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error("[DELETE /api/admin/banners/[id]]", err);
     return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
 }

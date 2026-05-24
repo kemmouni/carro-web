@@ -6,36 +6,51 @@ import { useState, useEffect } from "react";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const SLIDES = [
+export interface BannerSlide {
+  id: string;
+  title: string;
+  subtitle: string | null;
+  ctaText: string | null;
+  ctaLink: string | null;
+  imageUrl: string | null;
+}
+
+const FALLBACK_SLIDES: BannerSlide[] = [
   {
-    headline: ["FIND AUTO PARTS", "IN QATAR"],
-    sub: "<strong class='text-brand-orange'>2,000+</strong> verified sellers. Quality parts. Best prices.",
-    cta: { label: "Browse Parts", href: "/browse" },
-    image: "/images/hero-parts.jpg",
+    id: "fallback-1",
+    title: "Qatar's #1 Auto Parts Marketplace",
+    subtitle: "Find genuine OEM and aftermarket parts for all car makes",
+    ctaText: "Browse Parts",
+    ctaLink: "/browse",
+    imageUrl: null,
   },
   {
-    headline: ["SELL YOUR", "AUTO PARTS"],
-    sub: "Reach <strong class='text-brand-orange'>50,000+</strong> buyers across Qatar. List for free.",
-    cta: { label: "Start Selling", href: "/seller/setup" },
-    image: "/images/hero-sell.jpg",
-  },
-  {
-    headline: ["QUALITY PARTS", "BEST PRICES"],
-    sub: "Brakes, engines, suspension &amp; more — all in <strong class='text-brand-orange'>Qatar</strong>.",
-    cta: { label: "Shop by Car", href: "/search" },
-    image: "/images/hero-brakes.jpg",
+    id: "fallback-2",
+    title: "Sell Your Auto Parts",
+    subtitle: "Reach 50,000+ buyers across Qatar. List for free.",
+    ctaText: "Start Selling",
+    ctaLink: "/seller/setup",
+    imageUrl: null,
   },
 ];
 
-export function HeroBanner() {
+interface HeroBannerProps {
+  slides?: BannerSlide[];
+}
+
+export function HeroBanner({ slides }: HeroBannerProps) {
+  const displaySlides = slides && slides.length > 0 ? slides : FALLBACK_SLIDES;
   const [current, setCurrent] = useState(0);
 
   useEffect(() => {
-    const t = setInterval(() => setCurrent((c) => (c + 1) % SLIDES.length), 5000);
+    if (displaySlides.length <= 1) return;
+    const t = setInterval(() => setCurrent((c) => (c + 1) % displaySlides.length), 5000);
     return () => clearInterval(t);
-  }, []);
+  }, [displaySlides.length]);
 
-  const slide = SLIDES[current];
+  // Clamp current index if slides change
+  const idx = Math.min(current, displaySlides.length - 1);
+  const slide = displaySlides[idx];
 
   return (
     <section className="relative bg-[#111] overflow-hidden min-h-[360px] flex items-center">
@@ -47,44 +62,48 @@ export function HeroBanner() {
       <div className="max-w-screen-xl mx-auto px-6 w-full relative z-10 flex items-center">
         {/* Text */}
         <div className="py-14 max-w-[480px]">
-          <h1 className="text-5xl sm:text-[56px] font-black leading-[1.02] tracking-tight uppercase mb-3 animate-slide-up">
-            {slide.headline[0]}
-            <span className="block text-brand-orange">{slide.headline[1]}</span>
+          <h1 className="text-5xl sm:text-[56px] font-black leading-[1.02] tracking-tight uppercase mb-3 animate-slide-up text-white">
+            {slide.title}
           </h1>
-          <p
-            className="text-[16px] text-gray-300 mb-7 leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: slide.sub }}
-          />
-          <Link href={slide.cta.href} className="btn-primary w-fit">
-            {slide.cta.label}
-            <ChevronRight size={16} />
-          </Link>
+          {slide.subtitle && (
+            <p className="text-[16px] text-gray-300 mb-7 leading-relaxed">
+              {slide.subtitle}
+            </p>
+          )}
+          {slide.ctaText && slide.ctaLink && (
+            <Link href={slide.ctaLink} className="btn-primary w-fit">
+              {slide.ctaText}
+              <ChevronRight size={16} />
+            </Link>
+          )}
 
           {/* Dots */}
-          <div className="flex gap-2 mt-7">
-            {SLIDES.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setCurrent(i)}
-                className={cn(
-                  "h-2.5 rounded-full transition-all duration-300",
-                  i === current ? "bg-brand-orange w-6" : "bg-gray-600 w-2.5"
-                )}
-              />
-            ))}
-          </div>
+          {displaySlides.length > 1 && (
+            <div className="flex gap-2 mt-7">
+              {displaySlides.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrent(i)}
+                  className={cn(
+                    "h-2.5 rounded-full transition-all duration-300",
+                    i === idx ? "bg-brand-orange w-6" : "bg-gray-600 w-2.5"
+                  )}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Hero image */}
         <div className="absolute right-0 top-0 bottom-0 w-[52%] pointer-events-none hidden md:block">
           <div className="absolute left-0 top-0 bottom-0 w-28 bg-gradient-to-r from-[#111] to-transparent z-10" />
-          {slide.image && (
+          {slide.imageUrl && (
             <Image
-              src={slide.image}
-              alt="Auto Parts"
+              src={slide.imageUrl}
+              alt={slide.title}
               fill
               className="object-cover object-left"
-              priority={current === 0}
+              priority={idx === 0}
               sizes="(max-width: 768px) 0vw, 52vw"
               quality={80}
             />

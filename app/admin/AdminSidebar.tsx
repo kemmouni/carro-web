@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Tag, Car, Package, Users, LogOut,
-  Flag, Store, ShoppingBag, Calendar, Bell, Settings,
+  Flag, Store, ShoppingBag, Calendar, Bell, Settings, Image as ImageIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +16,7 @@ const NAV = [
   { label: "Stores",        href: "/admin/stores",        icon: Store },
   { label: "Users",         href: "/admin/users",         icon: Users },
   { label: "Reports",       href: "/admin/reports",       icon: Flag },
+  { label: "Hero Banners",  href: "/admin/banners",       icon: ImageIcon },
   { label: "Notify Users",  href: "/admin/notifications", icon: Bell },
   { label: "Categories",    href: "/admin/categories",    icon: Tag },
   { label: "Brands",        href: "/admin/brands",        icon: Car },
