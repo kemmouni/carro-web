@@ -1,6 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase";
 
+// ── POST /api/auth/password ── Send password-reset email ──────────────────────
+export async function POST(req: NextRequest) {
+  try {
+    const { email } = await req.json();
+
+    if (!email || typeof email !== "string") {
+      return NextResponse.json({ success: false, error: "Email is required" }, { status: 400 });
+    }
+
+    const supabase = await createSupabaseServerClient();
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://carro-web.vercel.app"}/auth/reset-password`,
+    });
+
+    if (error) {
+      console.error("[POST /api/auth/password]", error);
+      return NextResponse.json({ success: false, error: "Failed to send reset email" }, { status: 500 });
+    }
+
+    // Always return success to avoid email enumeration
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error("[POST /api/auth/password]", err);
+    return NextResponse.json({ success: false, error: "Failed to send reset email" }, { status: 500 });
+  }
+}
+
+// ── PUT /api/auth/password ── Change password (authenticated) ─────────────────
 export async function PUT(req: NextRequest) {
   try {
     const supabase = await createSupabaseServerClient();
