@@ -88,7 +88,7 @@ export function ProductCard({ product, variant = "grid", className, priority = f
         </div>
 
         {/* Seller + rating */}
-        {product.store.avgRating && (
+        {product.store.avgRating > 0 && (
           <div className="flex items-center gap-2 pt-2 border-t border-dark-border">
             <div className="w-5 h-5 rounded-full bg-brand-orange flex items-center justify-center text-[8px] font-bold text-white flex-shrink-0 overflow-hidden">
               {product.store.logoUrl
