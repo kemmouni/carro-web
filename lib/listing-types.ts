@@ -18,8 +18,8 @@ export const LISTING_TYPES: {
 
 export function listingTypeFromSlug(slug?: string | string[]): ListingType {
   const v = Array.isArray(slug) ? slug[0] : slug;
-  if (v === "services") return "SERVICE";
-  if (v === "cars") return "CAR";
+  if (v === "services" || v === "service" || v === "SERVICE") return "SERVICE";
+  if (v === "cars" || v === "car" || v === "CAR") return "CAR";
   return "PART";
 }
 

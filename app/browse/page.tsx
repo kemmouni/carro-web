@@ -59,7 +59,7 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
       </div>
 
       {/* 3-tab switcher (same as home) */}
-      <ListingTypeTabs active={type} />
+      <ListingTypeTabs active={type} basePath="/browse" />
 
       {/* Category strip (Parts: SVG icons; Services: 18 chips; Cars: 12 body types) */}
       <TypedCategories type={type} />

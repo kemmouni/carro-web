@@ -4,6 +4,8 @@ import { LISTING_TYPES, type ListingType } from "@/lib/listing-types";
 
 interface Props {
   active: ListingType;
+  /** Base path for tab links. Defaults to "/" (homepage). Pass "/browse" on the browse page. */
+  basePath?: string;
 }
 
 /**
@@ -11,14 +13,14 @@ interface Props {
  * Each tab is a Link so the page is server-rendered + cacheable
  * per type, and the URL is shareable.
  */
-export function ListingTypeTabs({ active }: Props) {
+export function ListingTypeTabs({ active, basePath = "/" }: Props) {
   return (
     <div className="px-4 md:px-0 pt-3 pb-2 md:pt-4 md:pb-3">
       <div className="md:max-w-screen-xl md:mx-auto md:px-6">
         <div className="flex gap-1 p-1 bg-dark-card border border-dark-border rounded-2xl">
           {LISTING_TYPES.map((t) => {
             const isActive = t.id === active;
-            const href = t.id === "PART" ? "/" : `/?type=${t.slug}`;
+            const href = t.id === "PART" ? basePath : `${basePath}?type=${t.slug}`;
             return (
               <Link
                 key={t.id}

@@ -11,7 +11,8 @@ interface CategoryCardProps {
 
 export function CategoryCard({ category, className }: CategoryCardProps) {
   const imageUrl = category.imageUrl ?? null;
-  const count = (category._count?.products ?? 0).toLocaleString();
+  const rawCount = category._count?.products ?? 0;
+  const count = rawCount.toLocaleString();
 
   return (
     <Link
@@ -49,7 +50,7 @@ export function CategoryCard({ category, className }: CategoryCardProps) {
             {category.name}
           </h3>
           <p className="text-[11px] text-gray-400 mt-0.5 drop-shadow">
-            {count} parts available
+            {count} {rawCount === 1 ? "part" : "parts"} available
           </p>
         </div>
         <div className={cn(
