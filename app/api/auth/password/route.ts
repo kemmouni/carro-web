@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
 
     const supabase = await createSupabaseServerClient();
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://Warsha+-web.vercel.app";
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://warsha.plus";
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
       // Redirect to the callback route which exchanges the PKCE code server-side,
       // then forwards to /auth/reset-password where the user sets a new password.

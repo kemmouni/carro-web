@@ -13,10 +13,18 @@ export async function DELETE() {
     const userId = user.id;
 
     // 1. Soft-delete: deactivate all listings so they disappear from search immediately
-    await supabaseAdmin
-      .from("products")
-      .update({ isActive: false })
-      .eq("storeId", supabaseAdmin.from("stores").select("id").eq("userId", userId));
+    // First, fetch the store IDs belonging to this user
+    const { data: storeRows } = await supabaseAdmin
+      .from("stores")
+      .select("id")
+      .eq("userId", userId);
+    const storeIds = (storeRows ?? []).map((s: { id: string }) => s.id);
+    if (storeIds.length > 0) {
+      await supabaseAdmin
+        .from("products")
+        .update({ isActive: false })
+        .in("storeId", storeIds);
+    }
 
     // 2. Delete the Supabase auth user (cascades will handle most FK constraints)
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);

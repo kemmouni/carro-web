@@ -14,7 +14,9 @@ export async function GET(req: NextRequest) {
   const { searchParams, origin } = new URL(req.url);
   const code     = searchParams.get("code");
   const next     = searchParams.get("next") ?? "/";
-  const isOAuth  = searchParams.get("provider") !== null || !next.startsWith("/auth/reset");
+  // isOAuth is true only when a provider param is explicitly set.
+  // Password-reset flows don't set ?provider, they set ?next=/auth/reset-password.
+  const isOAuth  = searchParams.get("provider") !== null;
 
   if (!code) {
     return NextResponse.redirect(`${origin}/auth/login?error=missing_code`);
