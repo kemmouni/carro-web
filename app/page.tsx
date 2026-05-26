@@ -255,11 +255,13 @@ export default async function HomePage({ searchParams }: HomeProps) {
                   title={brand.name}
                   className="flex-shrink-0"
                 >
-                  <div className="w-14 h-14 rounded-xl bg-dark-secondary border border-dark-border flex items-center justify-center overflow-hidden p-2 hover:border-brand-orange transition-colors">
+                  <div className="w-14 h-14 rounded-xl bg-dark-secondary border border-dark-border overflow-hidden hover:border-brand-orange transition-colors">
                     {brand.logoUrl ? (
-                      <Image src={brand.logoUrl} alt={brand.name} width={44} height={44} className="object-contain w-full h-full" />
+                      <Image src={brand.logoUrl} alt={brand.name} width={56} height={56} className="w-full h-full object-contain p-2" />
                     ) : (
-                      <BrandLogo name={brand.name} size={28} />
+                      <div className="w-full h-full flex items-center justify-center">
+                        <BrandLogo name={brand.name} size={28} />
+                      </div>
                     )}
                   </div>
                 </Link>
@@ -310,17 +312,16 @@ export default async function HomePage({ searchParams }: HomeProps) {
                 key={brand.id}
                 href={`/search?carMake=${encodeURIComponent(brand.name)}`}
                 title={brand.name}
-                className="card flex items-center justify-center w-[100px] h-[64px] flex-shrink-0 p-3 hover:border-brand-orange transition-all duration-200 group"
+                className="card flex items-center justify-center w-[100px] h-[64px] flex-shrink-0 overflow-hidden hover:border-brand-orange transition-all duration-200 group"
               >
                 {brand.logoUrl ? (
-                  <div className="relative w-full h-full">
-                    <Image
-                      src={brand.logoUrl}
-                      alt={brand.name}
-                      fill
-                      className="object-contain filter brightness-75 group-hover:brightness-110 transition-all"
-                    />
-                  </div>
+                  <Image
+                    src={brand.logoUrl}
+                    alt={brand.name}
+                    width={100}
+                    height={64}
+                    className="w-full h-full object-contain p-2 filter brightness-75 group-hover:brightness-110 transition-all"
+                  />
                 ) : (
                   <div className="text-gray-400 group-hover:text-white transition-colors">
                     <BrandLogo name={brand.name} size={40} />
