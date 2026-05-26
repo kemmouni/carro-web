@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import {
-  Store, Search, CheckCircle, XCircle, ExternalLink, Trash2, ShieldCheck,
+  Store, Search, XCircle, ExternalLink, Trash2, ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -23,7 +23,7 @@ interface AdminStore {
 export default function StoresClient({ initialStores }: { initialStores: AdminStore[] }) {
   const [stores, setStores]   = useState<AdminStore[]>(initialStores);
   const [search, setSearch]   = useState("");
-  const [filter, setFilter]   = useState<"ALL" | "VERIFIED" | "UNVERIFIED">("ALL");
+  const [filter, setFilter]   = useState<"ALL" | "ACTIVE" | "SUSPENDED">("ALL");
   const [loading, setLoading] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
@@ -34,8 +34,8 @@ export default function StoresClient({ initialStores }: { initialStores: AdminSt
         (s.owner?.email ?? "").toLowerCase().includes(q) ||
         (s.owner?.fullName ?? "").toLowerCase().includes(q);
       const matchFilter =
-        filter === "ALL"        ? true :
-        filter === "VERIFIED"   ? s.isVerified :
+        filter === "ALL"       ? true :
+        filter === "ACTIVE"    ? s.isVerified :
         !s.isVerified;
       return matchSearch && matchFilter;
     });
@@ -78,20 +78,20 @@ export default function StoresClient({ initialStores }: { initialStores: AdminSt
 
   const counts = {
     ALL:       stores.length,
-    VERIFIED:  stores.filter((s) => s.isVerified).length,
-    UNVERIFIED: stores.filter((s) => !s.isVerified).length,
+    ACTIVE:    stores.filter((s) => s.isVerified).length,
+    SUSPENDED: stores.filter((s) => !s.isVerified).length,
   };
 
   return (
     <div>
       <div className="mb-6">
         <h1 className="text-2xl font-black text-white">Stores</h1>
-        <p className="text-gray-500 text-sm mt-0.5">Verify stores and manage seller accounts</p>
+        <p className="text-gray-500 text-sm mt-0.5">Manage seller stores — all stores are activated automatically</p>
       </div>
 
       {/* Filters */}
       <div className="flex gap-2 mb-5 flex-wrap">
-        {(["ALL", "VERIFIED", "UNVERIFIED"] as const).map((f) => (
+        {(["ALL", "ACTIVE", "SUSPENDED"] as const).map((f) => (
           <button key={f} onClick={() => setFilter(f)}
             className={`px-4 py-2 rounded-lg text-[13px] font-semibold transition-colors ${
               filter === f ? "bg-brand-orange text-white" : "bg-dark-secondary text-gray-400 hover:text-white"
@@ -154,11 +154,11 @@ export default function StoresClient({ initialStores }: { initialStores: AdminSt
                   <td className="px-4 py-3.5">
                     {s.isVerified ? (
                       <span className="flex items-center gap-1 text-[11px] font-bold text-green-400 bg-green-500/10 px-2.5 py-1 rounded-full w-fit">
-                        <ShieldCheck size={11} /> Verified
+                        <ShieldCheck size={11} /> Active
                       </span>
                     ) : (
-                      <span className="text-[11px] font-bold text-yellow-400 bg-yellow-500/10 px-2.5 py-1 rounded-full w-fit">
-                        Unverified
+                      <span className="text-[11px] font-bold text-red-400 bg-red-500/10 px-2.5 py-1 rounded-full w-fit">
+                        Suspended
                       </span>
                     )}
                   </td>
@@ -168,17 +168,18 @@ export default function StoresClient({ initialStores }: { initialStores: AdminSt
                         className="p-1.5 rounded-lg hover:bg-dark-card text-gray-500 hover:text-white transition-colors" title="View store">
                         <ExternalLink size={13} />
                       </Link>
+                      {/* Suspend / Reactivate — only for manual abuse control */}
                       {s.isVerified ? (
                         <button onClick={() => update(s.id, { isVerified: false })} disabled={loading === s.id}
-                          title="Remove verification"
-                          className="p-1.5 rounded-lg hover:bg-red-500/20 text-green-400 hover:text-red-400 transition-colors disabled:opacity-40">
+                          title="Suspend store"
+                          className="p-1.5 rounded-lg hover:bg-red-500/20 text-gray-500 hover:text-red-400 transition-colors disabled:opacity-40">
                           <XCircle size={13} />
                         </button>
                       ) : (
                         <button onClick={() => update(s.id, { isVerified: true })} disabled={loading === s.id}
-                          title="Verify store"
+                          title="Reactivate store"
                           className="p-1.5 rounded-lg hover:bg-green-500/20 text-gray-500 hover:text-green-400 transition-colors disabled:opacity-40">
-                          <CheckCircle size={13} />
+                          <ShieldCheck size={13} />
                         </button>
                       )}
                       <button onClick={() => deleteStore(s.id, s.name)} disabled={loading === s.id}

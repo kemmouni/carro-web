@@ -73,7 +73,7 @@ export default async function DashboardPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
               { done: true,  step: "1", label: "Create your account",    sub: "Done!",                          href: null },
-              { done: !!store.isVerified, step: "2", label: "Complete your store profile", sub: "Add logo, description & phone", href: "/dashboard/store" },
+              { done: !!(store.description && store.phone), step: "2", label: "Complete your store profile", sub: "Add logo, description & phone", href: "/dashboard/store" },
               { done: false, step: "3", label: "Post your first listing", sub: "Takes less than 2 minutes",      href: "/dashboard/products/new" },
             ].map((s) => (
               <div key={s.step} className={`flex items-start gap-3 p-4 rounded-xl border transition-all ${s.done ? "bg-green-500/10 border-green-500/20" : "bg-dark-secondary border-dark-border hover:border-brand-orange"}`}>
@@ -174,7 +174,6 @@ export default async function DashboardPage() {
             <div className="space-y-3">
               {[
                 { label: "Products Active", val: `${stats.activeCount}/${stats.totalProducts}`, ok: stats.activeCount > 0 },
-                { label: "Verified Store",  val: store.isVerified ? "Yes" : "Pending",          ok: !!store.isVerified },
                 { label: "Response Rate",   val: "—",  ok: true },
                 { label: "Avg. Rating",     val: `${stats.avgRating} ★`, ok: true },
               ].map(({ label, val, ok }) => (

@@ -84,15 +84,16 @@ export async function POST(req: NextRequest) {
     const slug  = `${base}-${Math.random().toString(36).slice(2, 6)}`;
 
     const { data: store, error } = await supabaseAdmin.from("stores").insert({
-      id:        crypto.randomUUID(),
-      userId:    user.id,
-      name:      name.trim(),
+      id:         crypto.randomUUID(),
+      userId:     user.id,
+      name:       name.trim(),
       slug,
-      city:      city?.trim() || "Doha",
-      country:   "Qatar",
-      phone:     phone?.trim() || null,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      city:       city?.trim() || "Doha",
+      country:    "Qatar",
+      phone:      phone?.trim() || null,
+      isVerified: true,
+      createdAt:  new Date().toISOString(),
+      updatedAt:  new Date().toISOString(),
     }).select().single();
 
     if (error) throw error;

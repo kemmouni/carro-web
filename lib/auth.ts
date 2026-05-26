@@ -15,7 +15,7 @@ export const getSellerStore = cache(async () => {
 
   const { data: store } = await supabaseAdmin
     .from("stores")
-    .select("id, name, slug, isVerified")
+    .select("id, name, slug, isVerified, description, phone")
     .eq("userId", user.id)
     .single();
 

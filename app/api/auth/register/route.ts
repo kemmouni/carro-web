@@ -1,24 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient, supabaseAdmin } from "@/lib/supabase";
 
-function toSlug(text: string) {
-  return text
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "")
-    .replace(/-+/g, "-")
-    .slice(0, 80);
-}
-
 export async function POST(req: NextRequest) {
   try {
-    const { email, password, name, role } = await req.json();
+    const { email, password, name } = await req.json();
 
     if (!email || !password || !name) {
       return NextResponse.json({ success: false, error: "Missing required fields" }, { status: 400 });
     }
-
-    const isSeller = role === "SELLER";
 
     // 1. Create auth user via admin (email_confirm: true skips confirmation email)
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
@@ -29,7 +18,6 @@ export async function POST(req: NextRequest) {
 
     if (authError || !authData.user) {
       const msg = authError?.message ?? "Registration failed";
-      // Surface friendly messages for common errors
       const friendly = msg.includes("already registered") || msg.includes("already been registered")
         ? "An account with this email already exists."
         : msg;
@@ -38,46 +26,21 @@ export async function POST(req: NextRequest) {
 
     const userId = authData.user.id;
 
-    // 2. Insert into users table
+    // 2. Insert into users table as BUYER — store setup happens later when they choose to sell
     const { error: userError } = await supabaseAdmin.from("users").insert({
       id:       userId,
       email,
       fullName: name,
-      role:     isSeller ? "SELLER" : "BUYER",
+      role:     "BUYER",
     });
 
     if (userError) {
       console.error("[register] user insert error:", userError);
-      // Clean up auth user so there's no orphan
       await supabaseAdmin.auth.admin.deleteUser(userId);
       return NextResponse.json({ success: false, error: "Failed to create user profile" }, { status: 500 });
     }
 
-    // 3. If seller, create a store (retry once on slug collision)
-    if (isSeller) {
-      const makeSlug = () => `${toSlug(name)}-${Math.random().toString(36).slice(2, 7)}`;
-      let storeError = null;
-      for (let attempt = 0; attempt < 2; attempt++) {
-        const { error } = await supabaseAdmin.from("stores").insert({
-          id:      crypto.randomUUID(),
-          userId,
-          name,
-          slug:    makeSlug(),
-          city:    "Doha",
-          country: "Qatar",
-        });
-        storeError = error;
-        if (!error) break;
-      }
-      if (storeError) {
-        console.error("[register] store insert error:", storeError);
-        // Clean up auth user and profile so there's no orphan seller without a store
-        await supabaseAdmin.auth.admin.deleteUser(userId);
-        return NextResponse.json({ success: false, error: "Failed to create your store. Please try again." }, { status: 500 });
-      }
-    }
-
-    // 4. Auto sign-in so the user doesn't need to log in separately
+    // 3. Auto sign-in so the user doesn't need to log in separately
     const supabase = await createSupabaseServerClient();
     const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
       email,
@@ -85,11 +48,10 @@ export async function POST(req: NextRequest) {
     });
 
     if (signInError || !signInData.session) {
-      // Registration succeeded but auto-login failed — send to login page
       return NextResponse.json({
         success: true,
         autoLogin: false,
-        data: { role: isSeller ? "SELLER" : "BUYER" },
+        data: { role: "BUYER" },
       }, { status: 201 });
     }
 
@@ -97,7 +59,7 @@ export async function POST(req: NextRequest) {
       success:   true,
       autoLogin: true,
       data: {
-        role:     isSeller ? "SELLER" : "BUYER",
+        role:     "BUYER",
         fullName: name,
       },
     }, { status: 201 });

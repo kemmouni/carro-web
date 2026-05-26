@@ -145,7 +145,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
 
         {/* ── Left column ── */}
-        <div className="space-y-5">
+        <div className="space-y-5 min-w-0">
           <ProductGallery images={p.images} />
 
           {/* Description + Specs */}
@@ -187,7 +187,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                     ? "More Services"
                     : `More in ${p.category?.name}`}
               </h2>
-              <div className="flex gap-4 overflow-x-auto no-scrollbar pb-1">
+              <div className="flex gap-4 overflow-x-auto no-scrollbar pb-1 min-w-0">
                 {related.map((rp) => (
                   <ProductCard key={(rp as Product).id} product={rp as Product} className="min-w-[180px] w-[180px] flex-shrink-0" />
                 ))}

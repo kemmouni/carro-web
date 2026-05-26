@@ -3,15 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Mail, Lock, User, Car, Store } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, Car } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SocialAuthButtons from "@/components/ui/SocialAuthButtons";
 
-type Role = "BUYER" | "SELLER";
-
 export default function RegisterPage() {
   const router = useRouter();
-  const [role, setRole]         = useState<Role>("BUYER");
   const [name, setName]         = useState("");
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
@@ -38,7 +35,7 @@ export default function RegisterPage() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, role }),
+        body: JSON.stringify({ name, email, password }),
       });
       const json = await res.json();
 
@@ -47,10 +44,9 @@ export default function RegisterPage() {
         return;
       }
 
-      // Auto-login succeeded — redirect directly based on role
+      // Auto-login succeeded — go to homepage
       if (json.autoLogin) {
-        const destination = json.data?.role === "SELLER" ? "/dashboard" : "/";
-        router.push(destination);
+        router.push("/");
         router.refresh();
       } else {
         // Fallback: send to login with success message
@@ -81,30 +77,6 @@ export default function RegisterPage() {
           <p className="text-[13px] text-gray-400 mt-1">Join Qatar's #1 auto parts marketplace</p>
         </div>
 
-        {/* Role toggle */}
-        <div className="flex gap-3 mb-5">
-          {([
-            { value: "BUYER",  label: "I'm a Buyer",  icon: User,  sub: "Browse & buy parts" },
-            { value: "SELLER", label: "I'm a Seller", icon: Store, sub: "List & sell parts" },
-          ] as const).map(({ value, label, icon: Icon, sub }) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => setRole(value)}
-              className={cn(
-                "flex-1 p-4 rounded-xl border-2 text-left transition-all",
-                role === value
-                  ? "border-brand-orange bg-brand-orange-light"
-                  : "border-dark-border bg-dark-card hover:border-gray-500"
-              )}
-            >
-              <Icon size={18} className={cn("mb-1.5", role === value ? "text-brand-orange" : "text-gray-400")} />
-              <p className={cn("text-[13px] font-bold", role === value ? "text-white" : "text-gray-300")}>{label}</p>
-              <p className="text-[11px] text-gray-500">{sub}</p>
-            </button>
-          ))}
-        </div>
-
         {/* Card */}
         <div className="card p-7">
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -118,15 +90,15 @@ export default function RegisterPage() {
             {/* Name */}
             <div>
               <label className="block text-[12px] font-semibold text-gray-400 mb-1.5">
-                {role === "SELLER" ? "Business / Store name" : "Full name"}
+                Full name
               </label>
               <div className="relative">
-                {role === "SELLER" ? <Store size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" /> : <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />}
+                <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
                 <input
                   type="text"
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  placeholder={role === "SELLER" ? "Auto Parts Doha" : "Mohammed Al-Rashid"}
+                  placeholder="Mohammed Al-Rashid"
                   required
                   className="input pl-10 w-full"
                 />
