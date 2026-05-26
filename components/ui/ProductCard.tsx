@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart, MapPin, GitCompareArrows } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { cn, formatPrice, primaryImage, PLACEHOLDER_IMG, timeAgo } from "@/lib/utils";
 import { ConditionBadge } from "./Badge";
 import { StarRating } from "./StarRating";
@@ -14,10 +15,13 @@ interface ProductCardProps {
   variant?: "grid" | "list" | "compact";
   className?: string;
   priority?: boolean; // pass true for above-the-fold cards to preload image
+  initialWishlisted?: boolean;
 }
 
-export function ProductCard({ product, variant = "grid", className, priority = false }: ProductCardProps) {
-  const [wishlisted, setWishlisted] = useState(false);
+export function ProductCard({ product, variant = "grid", className, priority = false, initialWishlisted = false }: ProductCardProps) {
+  const [wishlisted, setWishlisted] = useState(initialWishlisted);
+  const [saving, setSaving] = useState(false);
+  const router = useRouter();
   const imgUrl = primaryImage(product.images);
 
   if (variant === "compact") return <CompactProductCard product={product} className={className} />;
@@ -45,10 +49,32 @@ export function ProductCard({ product, variant = "grid", className, priority = f
 
         {/* Wishlist */}
         <button
-          onClick={(e) => { e.preventDefault(); setWishlisted(!wishlisted); }}
+          onClick={async (e) => {
+            e.preventDefault();
+            if (saving) return;
+            setSaving(true);
+            try {
+              if (wishlisted) {
+                const res = await fetch(`/api/wishlist?productId=${product.id}`, { method: "DELETE" });
+                if (res.status === 401) { router.push("/auth/login"); return; }
+                if (res.ok) setWishlisted(false);
+              } else {
+                const res = await fetch("/api/wishlist", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ productId: product.id }),
+                });
+                if (res.status === 401) { router.push("/auth/login"); return; }
+                if (res.ok) setWishlisted(true);
+              }
+            } finally {
+              setSaving(false);
+            }
+          }}
           className={cn(
             "absolute top-2.5 right-2.5 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm transition-all duration-200",
-            wishlisted ? "bg-brand-orange text-white" : "bg-black/50 text-gray-300 hover:text-brand-orange hover:bg-black/70"
+            wishlisted ? "bg-brand-orange text-white" : "bg-black/50 text-gray-300 hover:text-brand-orange hover:bg-black/70",
+            saving && "opacity-60 cursor-wait"
           )}
         >
           <Heart size={14} fill={wishlisted ? "currentColor" : "none"} />

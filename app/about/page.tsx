@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "About Us — Carro Qatar",
-  description: "Learn about Carro, Qatar's trusted marketplace for auto parts, services, and cars.",
+  title: "About Us — Warsha+ Qatar",
+  description: "Learn about Warsha+, Qatar's trusted marketplace for auto parts, services, and cars.",
 };
 
 export default function AboutPage() {
@@ -12,7 +12,7 @@ export default function AboutPage() {
       <div className="max-w-3xl mx-auto">
 
         <div className="mb-10">
-          <h1 className="text-[32px] font-black text-white mb-3">About Carro</h1>
+          <h1 className="text-[32px] font-black text-white mb-3">About Warsha+</h1>
           <p className="text-[15px] text-gray-400 leading-relaxed">
             Qatar's #1 marketplace for auto parts, automotive services, and cars.
           </p>
@@ -21,7 +21,7 @@ export default function AboutPage() {
         <div className="card p-8 mb-6">
           <h2 className="text-[20px] font-black text-white mb-4">Our Mission</h2>
           <p className="text-[14px] text-gray-400 leading-relaxed mb-4">
-            Carro was built to solve a simple problem: finding genuine, affordable auto parts in Qatar shouldn't be hard. Whether you're a mechanic in Al Wakrah, a car enthusiast in Lusail, or a fleet manager in the Industrial Area — Carro connects you directly with thousands of verified sellers across Doha and beyond.
+            Warsha+ was built to solve a simple problem: finding genuine, affordable auto parts in Qatar shouldn't be hard. Whether you're a mechanic in Al Wakrah, a car enthusiast in Lusail, or a fleet manager in the Industrial Area — Warsha+ connects you directly with thousands of verified sellers across Doha and beyond.
           </p>
           <p className="text-[14px] text-gray-400 leading-relaxed">
             We believe the auto parts market deserves the same trust, transparency, and convenience that modern e-commerce has brought to other industries. That's what we're building.
@@ -42,7 +42,7 @@ export default function AboutPage() {
         </div>
 
         <div className="card p-8 mb-6">
-          <h2 className="text-[20px] font-black text-white mb-4">Why Carro?</h2>
+          <h2 className="text-[20px] font-black text-white mb-4">Why Warsha+?</h2>
           <ul className="space-y-3">
             {[
               ["Free to list", "Sellers can post listings at no cost. No hidden fees."],

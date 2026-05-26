@@ -60,7 +60,7 @@ export default async function AdminPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-white mb-1">Admin Overview</h1>
-      <p className="text-gray-400 text-sm mb-8">Full control of the Carro marketplace</p>
+      <p className="text-gray-400 text-sm mb-8">Full control of the Warsha+ marketplace</p>
 
       {/* Alerts row */}
       {(stats.pendingProducts > 0 || stats.pendingReports > 0 || stats.pendingBookings > 0) && (

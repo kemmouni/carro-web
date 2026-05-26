@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — Carro Qatar",
-  description: "How Carro collects, uses, and protects your personal data.",
+  title: "Privacy Policy — Warsha+ Qatar",
+  description: "How Warsha+ collects, uses, and protects your personal data.",
 };
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
@@ -23,7 +23,7 @@ export default function PrivacyPage() {
 
         <div className="card p-8 space-y-2">
           <Section title="1. Introduction">
-            <p>Carro (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;) is committed to protecting your personal data in accordance with Qatar&apos;s Personal Data Privacy Protection Law (Law No. 13 of 2016) and applicable regulations.</p>
+            <p>Warsha+ (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;) is committed to protecting your personal data in accordance with Qatar&apos;s Personal Data Privacy Protection Law (Law No. 13 of 2016) and applicable regulations.</p>
             <p>This Privacy Policy explains what data we collect, how we use it, and your rights regarding your personal information.</p>
           </Section>
 
@@ -70,7 +70,7 @@ export default function PrivacyPage() {
               <li>Object to processing of your data for marketing purposes</li>
               <li>Request a copy of your data in a portable format</li>
             </ul>
-            <p>To exercise these rights, contact: <a href="mailto:privacy@carro.qa" className="text-brand-orange hover:underline">privacy@carro.qa</a></p>
+            <p>To exercise these rights, contact: <a href="mailto:privacy@warsha.plus" className="text-brand-orange hover:underline">privacy@warsha.plus</a></p>
           </Section>
 
           <Section title="7. Cookies and Tracking">
@@ -90,8 +90,8 @@ export default function PrivacyPage() {
           </Section>
 
           <Section title="11. Contact">
-            <p>Data Controller: Carro Qatar<br />
-            Email: <a href="mailto:privacy@carro.qa" className="text-brand-orange hover:underline">privacy@carro.qa</a></p>
+            <p>Data Controller: Warsha+ Qatar<br />
+            Email: <a href="mailto:privacy@warsha.plus" className="text-brand-orange hover:underline">privacy@warsha.plus</a></p>
           </Section>
         </div>
       </div>

@@ -1,6 +1,6 @@
-import { MetadataRoute } from "next";
+import type { MetadataRoute } from "next";
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://carro.qa";
+const BASE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://warsha.plus").replace(/\/$/, "");
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -9,13 +9,21 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: "*",
         allow: "/",
         disallow: [
+          // Private / auth-gated sections
           "/admin/",
           "/dashboard/",
-          "/api/",
           "/auth/",
+          "/seller/",
+          // User-specific pages — different per session, no indexing value
+          "/wishlist",
+          // Internal API routes
+          "/api/",
+          // Redirect pages (crawl budget waste)
+          "/browse",
         ],
       },
     ],
-    sitemap: `${BASE_URL}/sitemap.xml`,
+    sitemap: `${BASE}/sitemap.xml`,
+    host: BASE,
   };
 }

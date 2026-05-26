@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Bell, MapPin, ChevronDown, Search } from "lucide-react";
 import Link from "next/link";
 import { useNotifications } from "@/context/NotificationsContext";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function MobileHeader() {
   const router = useRouter();
@@ -13,6 +14,7 @@ export default function MobileHeader() {
 
   // Use shared context — gets polling + sound for free
   const { unreadCount } = useNotifications();
+  const { t, isAr }     = useLanguage();
 
   useEffect(() => {
     fetch("/api/auth/session")
@@ -32,8 +34,8 @@ export default function MobileHeader() {
       <div className="flex items-center justify-between px-4 pt-3 pb-2">
         {/* Logo */}
         <Link href="/">
-          <span className="text-[28px] font-black text-brand-orange tracking-tight leading-none">Carro</span>
-          <p className="text-[8px] tracking-[2px] text-gray-500 uppercase leading-none mt-0.5">AUTO PARTS MARKETPLACE</p>
+          <span className="text-[28px] font-black text-brand-orange tracking-tight leading-none">Warsha+</span>
+          <p className={`text-[8px] tracking-[2px] text-gray-500 uppercase leading-none mt-0.5 ${isAr ? "font-arabic tracking-normal" : ""}`}>{t("autoPartsMarket")}</p>
         </Link>
 
         {/* Right actions */}
@@ -51,9 +53,9 @@ export default function MobileHeader() {
               )}
             </Link>
           )}
-          <button className="flex items-center gap-1 text-gray-300">
+          <button className={`flex items-center gap-1 text-gray-300 ${isAr ? "font-arabic" : ""}`}>
             <MapPin size={14} className="text-brand-orange" />
-            <span className="text-[13px] font-medium">Doha, Qatar</span>
+            <span className="text-[13px] font-medium">{t("doha")}, Qatar</span>
             <ChevronDown size={12} className="text-gray-500" />
           </button>
         </div>
@@ -66,7 +68,7 @@ export default function MobileHeader() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search parts, brands, categories..."
+            placeholder={t("searchParts")}
             className="w-full bg-dark-secondary border border-dark-border rounded-xl pl-10 pr-4 py-2.5 text-[14px] text-white placeholder-gray-500 focus:outline-none focus:border-brand-orange"
           />
         </div>

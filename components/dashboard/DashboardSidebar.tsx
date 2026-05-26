@@ -48,7 +48,7 @@ export function DashboardSidebar({ storeName, isVerified }: Props) {
       {/* Logo */}
       <div className="px-5 py-5 border-b border-dark-border">
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-[22px] font-black text-brand-orange tracking-tight">CARRO</span>
+          <span className="text-[22px] font-black text-brand-orange tracking-tight">Warsha+</span>
           <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">Seller</span>
         </Link>
       </div>

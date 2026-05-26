@@ -1,11 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin, createSupabaseServerClient } from "@/lib/supabase";
+
+async function verifyProductOwner(productId: string, userId: string): Promise<boolean> {
+  const { data } = await supabaseAdmin
+    .from("products")
+    .select("store:stores(userId)")
+    .eq("id", productId)
+    .single();
+  const storeUserId = (data?.store as { userId: string } | null)?.userId;
+  return storeUserId === userId;
+}
 
 // PUT — update product
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const body = await req.json();
+
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    if (!(await verifyProductOwner(id, user.id))) return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
 
     const { images, ...fields } = body;
 
@@ -58,9 +73,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 }
 
 // DELETE — delete product
-export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
+
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    if (!(await verifyProductOwner(id, user.id))) return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
 
     // Delete images first (cascade should handle it, but just in case)
     await supabaseAdmin.from("product_images").delete().eq("productId", id);

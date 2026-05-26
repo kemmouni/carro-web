@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Mail, Lock, User, Car, Store } from "lucide-react";
 import { cn } from "@/lib/utils";
+import SocialAuthButtons from "@/components/ui/SocialAuthButtons";
 
 type Role = "BUYER" | "SELLER";
 
@@ -73,7 +74,7 @@ export default function RegisterPage() {
               <Car size={20} className="text-white" />
             </div>
             <span className="text-[22px] font-black tracking-tight">
-              Carro<span className="text-brand-orange">.</span>
+              Warsha+<span className="text-brand-orange">.</span>
             </span>
           </Link>
           <h1 className="text-[26px] font-black text-white">Create your account</h1>
@@ -218,6 +219,16 @@ export default function RegisterPage() {
             </button>
 
           </form>
+        </div>
+
+        {/* Social sign-up */}
+        <div className="mt-4">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex-1 h-px bg-dark-border" />
+            <span className="text-[11px] text-gray-500">or sign up with</span>
+            <div className="flex-1 h-px bg-dark-border" />
+          </div>
+          <SocialAuthButtons mode="signup" />
         </div>
 
         {/* Login link */}

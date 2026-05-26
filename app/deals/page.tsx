@@ -7,7 +7,7 @@ import type { Product } from "@/lib/types";
 export const revalidate = 60;
 
 export const metadata = {
-  title: "Deals & Discounts — Carro Qatar",
+  title: "Deals & Discounts — Warsha+ Qatar",
   description: "Shop the best deals on auto parts, services and cars in Qatar. Discounted listings from verified sellers.",
 };
 

@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Save, X, Upload, Plus, Trash2, Loader2, ImageIcon } from "lucide-react";
+import { Save, X, Upload, Plus, Loader2, ImageIcon, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SERVICE_CATEGORIES, CAR_BODY_TYPES } from "@/lib/listing-types";
 import type { ListingType } from "@/lib/listing-types";
@@ -54,8 +54,9 @@ export function ProductForm({ categories, product, storeId, listingType: ltProp 
   const type: ListingType = ltProp ?? product?.listingType ?? "PART";
   const isEdit = !!product?.id;
 
-  const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState("");
+  const [loading,   setLoading]   = useState(false);
+  const [error,     setError]     = useState("");
+  const [submitted, setSubmitted] = useState(false);
 
   const [slots, setSlots] = useState<ImageSlot[]>(
     product?.images?.length
@@ -140,11 +141,27 @@ export function ProductForm({ categories, product, storeId, listingType: ltProp 
       categoryIdVal = categories[0]?.id ?? form.categoryId;
     }
 
+    // For CAR listings, append vehicle specs to description since no dedicated DB columns exist
+    let descriptionValue = form.description;
+    if (type === "CAR") {
+      const specs = [
+        form.mileage      && `Mileage: ${parseInt(String(form.mileage)).toLocaleString()} km`,
+        form.transmission && `Transmission: ${form.transmission}`,
+        form.fuelType     && `Fuel Type: ${form.fuelType}`,
+        form.color        && `Color: ${form.color}`,
+      ].filter(Boolean).join(" · ");
+      if (specs) {
+        descriptionValue = form.description
+          ? `${form.description}\n\n📋 ${specs}`
+          : `📋 ${specs}`;
+      }
+    }
+
     const payload = {
       storeId,
       listingType: type,
       title:         form.title,
-      description:   form.description,
+      description:   descriptionValue,
       slug,
       price:         form.pricingModel === "quote" ? 0 : parseFloat(String(form.price)) || 0,
       originalPrice: form.originalPrice ? parseFloat(String(form.originalPrice)) : null,
@@ -167,14 +184,50 @@ export function ProductForm({ categories, product, storeId, listingType: ltProp 
       const res    = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       const data   = await res.json();
       if (!data.success) throw new Error(data.error ?? "Failed to save listing");
-      router.push("/dashboard/products");
-      router.refresh();
+      if (isEdit) {
+        router.push("/dashboard/products");
+        router.refresh();
+      } else {
+        setSubmitted(true);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
     }
   };
+
+  // ── Success screen (new listing only) ──
+  if (submitted) {
+    return (
+      <div className="max-w-lg mx-auto text-center py-16 px-6">
+        <div className="w-20 h-20 rounded-full bg-green-500/15 flex items-center justify-center mx-auto mb-6">
+          <CheckCircle2 size={40} className="text-green-400" />
+        </div>
+        <h2 className="text-2xl font-black text-white mb-2">Listing Submitted!</h2>
+        <p className="text-gray-400 text-[14px] leading-relaxed mb-2">
+          Your listing has been submitted and is <span className="text-yellow-400 font-semibold">pending review</span> by our team.
+        </p>
+        <p className="text-gray-500 text-[13px] mb-8">
+          Most listings are approved within a few hours. You&apos;ll be able to see the status in your products list.
+        </p>
+        <div className="flex gap-3 justify-center">
+          <button
+            onClick={() => router.push("/dashboard/products/new")}
+            className="px-5 py-2.5 rounded-xl bg-brand-orange text-white font-bold text-[13px] hover:bg-[#e64d00] transition-colors"
+          >
+            + Add Another Listing
+          </button>
+          <button
+            onClick={() => { router.push("/dashboard/products"); router.refresh(); }}
+            className="px-5 py-2.5 rounded-xl bg-dark-card border border-dark-border text-gray-300 font-semibold text-[13px] hover:text-white transition-colors"
+          >
+            View My Listings
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl">

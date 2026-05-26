@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronDown, ChevronUp, X, MapPin, Clock, Eye, SlidersHorizontal, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronUp, X, MapPin, Clock, Eye, SlidersHorizontal, Loader2, Search, Sparkles } from "lucide-react";
 import { cn, formatPrice, timeAgo } from "@/lib/utils";
 import { ConditionBadge } from "@/components/ui/Badge";
 import { StarRating } from "@/components/ui/StarRating";
@@ -72,15 +72,20 @@ function ListingCard({ product: p }: { product: Product }) {
 }
 
 // ── Filter section ─────────────────────────────────────────
-function FilterSection({ title, children }: { title: string; children: React.ReactNode }) {
-  const [open, setOpen] = useState(true);
+function FilterSection({ title, children, defaultOpen = true }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border-b border-dark-border py-4">
-      <button onClick={() => setOpen(!open)} className="flex items-center justify-between w-full mb-3">
-        <span className="text-[11px] font-bold tracking-widest uppercase text-white">{title}</span>
-        {open ? <ChevronUp size={14} className="text-gray-500" /> : <ChevronDown size={14} className="text-gray-500" />}
+    <div className="border-b border-dark-border/60 last:border-0">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center justify-between w-full py-3.5 group"
+      >
+        <span className="text-[12px] font-semibold text-gray-300 group-hover:text-white transition-colors">{title}</span>
+        <div className={cn("w-5 h-5 rounded-full flex items-center justify-center transition-all", open ? "bg-brand-orange/20 text-brand-orange" : "bg-dark-border text-gray-500")}>
+          {open ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
+        </div>
       </button>
-      {open && children}
+      {open && <div className="pb-4">{children}</div>}
     </div>
   );
 }
@@ -95,7 +100,11 @@ function SearchContent() {
   const [type,      setType]      = useState<ListingType | "">(slugToType(searchParams.get("type")));
   const [service,   setService]   = useState(searchParams.get("service")   ?? "");
   const [body,      setBody]      = useState(searchParams.get("body")      ?? "");
-  const [category,  setCategory]  = useState(searchParams.get("category")  ?? "");
+  // Category is only valid for PART listings — ignore it from URL when type is CAR/SERVICE
+  const urlType = slugToType(searchParams.get("type"));
+  const [category,  setCategory]  = useState(
+    (urlType === "" || urlType === "PART") ? (searchParams.get("category") ?? "") : ""
+  );
   const [carMake,   setCarMake]   = useState(searchParams.get("carMake")   ?? "");
   const [carModel,  setCarModel]  = useState(searchParams.get("carModel")  ?? "");
   const [condition, setCondition] = useState(searchParams.get("condition") ?? "");
@@ -209,120 +218,269 @@ function SearchContent() {
   ].filter(Boolean) as { label: string; clear: () => void }[];
 
   // ── Sidebar filters ──────────────────────────────────────
+  const activeCount = activeTags.length;
+
   const Sidebar = () => (
-    <aside className="space-y-0">
-      <div className="flex items-center justify-between mb-2 py-2">
-        <span className="text-[15px] font-bold text-white">Filters</span>
+    <aside className="rounded-2xl bg-dark-card border border-dark-border/60 overflow-hidden">
+
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3.5 border-b border-dark-border/60 bg-dark-secondary/40">
+        <div className="flex items-center gap-2">
+          <SlidersHorizontal size={14} className="text-brand-orange" />
+          <span className="text-[14px] font-bold text-white">Filters</span>
+          {activeCount > 0 && (
+            <span className="w-5 h-5 rounded-full bg-brand-orange text-white text-[10px] font-bold flex items-center justify-center">
+              {activeCount}
+            </span>
+          )}
+        </div>
         {hasFilters && (
-          <button onClick={clearAll} className="text-[12px] text-brand-orange font-medium hover:opacity-70">
-            Clear all
+          <button
+            onClick={clearAll}
+            className="text-[11px] text-gray-400 hover:text-brand-orange font-medium transition-colors flex items-center gap-1"
+          >
+            <X size={11} /> Clear all
           </button>
         )}
       </div>
 
-      <FilterSection title="Listing Type">
-        <div className="space-y-2">
-          {[
-            { id: "" as const,        label: "All listings" },
-            { id: "PART" as const,    label: "Parts" },
-            { id: "SERVICE" as const, label: "Services" },
-            { id: "CAR" as const,     label: "Cars for Sale" },
-          ].map((t) => (
-            <label key={t.id || "all"} className="flex items-center gap-2.5 cursor-pointer">
-              <input type="radio" name="ltype" checked={type === t.id} onChange={() => changeType(t.id)} className="accent-brand-orange" />
-              <span className={cn("text-[13px]", type === t.id ? "text-white font-semibold" : "text-gray-400")}>{t.label}</span>
-            </label>
-          ))}
-        </div>
-      </FilterSection>
+      <div className="px-4 divide-y divide-dark-border/40">
 
-      {/* Type-specific sub-filter */}
-      {type === "SERVICE" && (
-        <FilterSection title="Service">
-          <select className="input w-full text-[13px]" value={service} onChange={(e) => setService(e.target.value)}>
-            <option value="">All services</option>
-            {SERVICE_CATEGORIES.map((s) => (
-              <option key={s.slug} value={s.slug}>{s.name}</option>
+        {/* Listing Type — pill toggle */}
+        <FilterSection title="Listing Type">
+          <div className="grid grid-cols-2 gap-1.5">
+            {([
+              { id: "" as const,        label: "All",      emoji: "🔍" },
+              { id: "PART" as const,    label: "Parts",    emoji: "⚙️" },
+              { id: "SERVICE" as const, label: "Services", emoji: "🔧" },
+              { id: "CAR" as const,     label: "Cars",     emoji: "🚗" },
+            ] as const).map((t) => (
+              <button
+                key={t.id || "all"}
+                onClick={() => changeType(t.id)}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-semibold transition-all border",
+                  type === t.id
+                    ? "bg-brand-orange text-white border-brand-orange shadow-sm shadow-brand-orange/25"
+                    : "bg-dark-secondary border-dark-border text-gray-400 hover:border-gray-500 hover:text-gray-200"
+                )}
+              >
+                <span className="text-[13px]">{t.emoji}</span>
+                {t.label}
+              </button>
             ))}
-          </select>
+          </div>
         </FilterSection>
-      )}
 
-      {type === "CAR" && (
-        <FilterSection title="Body Type">
-          <select className="input w-full text-[13px]" value={body} onChange={(e) => setBody(e.target.value)}>
-            <option value="">All body types</option>
-            {CAR_BODY_TYPES.map((b) => (
-              <option key={b.slug} value={b.slug}>{b.name}</option>
+        {/* Service sub-filter */}
+        {type === "SERVICE" && (
+          <FilterSection title="Service Category">
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                onClick={() => setService("")}
+                className={cn(
+                  "px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all border",
+                  !service ? "bg-brand-orange/20 border-brand-orange/40 text-brand-orange" : "bg-dark-secondary border-dark-border text-gray-400 hover:border-gray-500"
+                )}
+              >All</button>
+              {SERVICE_CATEGORIES.map((s) => (
+                <button
+                  key={s.slug}
+                  onClick={() => setService(s.slug)}
+                  className={cn(
+                    "px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all border",
+                    service === s.slug ? "bg-brand-orange/20 border-brand-orange/40 text-brand-orange" : "bg-dark-secondary border-dark-border text-gray-400 hover:border-gray-500"
+                  )}
+                >{s.name}</button>
+              ))}
+            </div>
+          </FilterSection>
+        )}
+
+        {/* Body Type sub-filter */}
+        {type === "CAR" && (
+          <FilterSection title="Body Type">
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                onClick={() => setBody("")}
+                className={cn(
+                  "px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all border",
+                  !body ? "bg-brand-orange/20 border-brand-orange/40 text-brand-orange" : "bg-dark-secondary border-dark-border text-gray-400 hover:border-gray-500"
+                )}
+              >Any</button>
+              {CAR_BODY_TYPES.map((b) => (
+                <button
+                  key={b.slug}
+                  onClick={() => setBody(b.slug)}
+                  className={cn(
+                    "px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all border",
+                    body === b.slug ? "bg-brand-orange/20 border-brand-orange/40 text-brand-orange" : "bg-dark-secondary border-dark-border text-gray-400 hover:border-gray-500"
+                  )}
+                >{b.name}</button>
+              ))}
+            </div>
+          </FilterSection>
+        )}
+
+        {/* Category — only relevant for Parts */}
+        {(type === "" || type === "PART") && (
+        <FilterSection title="Category">
+          <div className="space-y-0.5 max-h-52 overflow-y-auto pr-1 scrollbar-thin">
+            <button
+              onClick={() => setCategory("")}
+              className={cn(
+                "w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-[12px] transition-all",
+                !category ? "bg-brand-orange/15 text-brand-orange font-semibold" : "text-gray-400 hover:bg-dark-secondary hover:text-gray-200"
+              )}
+            >
+              <span>All categories</span>
+            </button>
+            {categories.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => setCategory(c.slug)}
+                className={cn(
+                  "w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-[12px] transition-all",
+                  category === c.slug ? "bg-brand-orange/15 text-brand-orange font-semibold" : "text-gray-400 hover:bg-dark-secondary hover:text-gray-200"
+                )}
+              >
+                <span className="text-left leading-snug">{c.name}</span>
+                {(c._count?.products ?? 0) > 0 && (
+                  <span className={cn("text-[10px] tabular-nums flex-shrink-0 ml-2", category === c.slug ? "text-brand-orange/70" : "text-gray-600")}>
+                    {c._count?.products}
+                  </span>
+                )}
+              </button>
             ))}
-          </select>
+          </div>
         </FilterSection>
-      )}
+        )}
 
-      <FilterSection title="Category">
-        <div className="space-y-2">
-          <label className="flex items-center gap-2.5 cursor-pointer">
-            <input type="radio" name="cat" checked={!category} onChange={() => setCategory("")} className="accent-brand-orange" />
-            <span className="text-[13px] text-gray-400">All categories</span>
-          </label>
-          {categories.map((c) => (
-            <label key={c.id} className="flex items-center gap-2.5 cursor-pointer">
-              <input type="radio" name="cat" checked={category === c.slug} onChange={() => setCategory(c.slug)} className="accent-brand-orange" />
-              <span className={cn("text-[13px]", category === c.slug ? "text-white font-semibold" : "text-gray-400")}>
-                {c.name}
-              </span>
-              <span className="ml-auto text-[11px] text-gray-600">{c._count?.products ?? 0}</span>
-            </label>
-          ))}
-        </div>
-      </FilterSection>
+        {/* Car Make */}
+        <FilterSection title="Car Make">
+          <div className="flex flex-wrap gap-1.5">
+            <button
+              onClick={() => setCarMake("")}
+              className={cn(
+                "px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all border",
+                !carMake ? "bg-brand-orange/20 border-brand-orange/40 text-brand-orange" : "bg-dark-secondary border-dark-border text-gray-400 hover:border-gray-500"
+              )}
+            >Any</button>
+            {CAR_MAKES.map((m) => (
+              <button
+                key={m}
+                onClick={() => setCarMake(carMake === m ? "" : m)}
+                className={cn(
+                  "px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all border",
+                  carMake === m ? "bg-brand-orange/20 border-brand-orange/40 text-brand-orange" : "bg-dark-secondary border-dark-border text-gray-400 hover:border-gray-500"
+                )}
+              >{m}</button>
+            ))}
+          </div>
+        </FilterSection>
 
-      <FilterSection title="Car Make">
-        <select
-          className="input w-full text-[13px]"
-          value={carMake}
-          onChange={(e) => setCarMake(e.target.value)}
+        {/* Car Model (shown only when make is selected) */}
+        {carMake && (
+          <FilterSection title={`${carMake} Model`}>
+            <div className="relative">
+              <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+              <input
+                className="input w-full text-[13px] pl-8"
+                placeholder="e.g. Land Cruiser"
+                value={carModel}
+                onChange={(e) => setCarModel(e.target.value)}
+              />
+            </div>
+          </FilterSection>
+        )}
+
+        {/* Condition — pill chips */}
+        <FilterSection title="Condition">
+          <div className="flex gap-2">
+            {[
+              { value: "", label: "Any" },
+              { value: "NEW", label: "New" },
+              { value: "LIKE_NEW", label: "Like New" },
+              { value: "USED", label: "Used" },
+            ].map((c) => (
+              <button
+                key={c.value}
+                onClick={() => setCondition(c.value)}
+                className={cn(
+                  "flex-1 py-2 rounded-xl text-[11px] font-semibold transition-all border",
+                  condition === c.value
+                    ? "bg-brand-orange text-white border-brand-orange shadow-sm shadow-brand-orange/25"
+                    : "bg-dark-secondary border-dark-border text-gray-400 hover:border-gray-500 hover:text-gray-200"
+                )}
+              >{c.label}</button>
+            ))}
+          </div>
+        </FilterSection>
+
+        {/* Price Range */}
+        <FilterSection title="Price Range (QAR)">
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-gray-500 font-medium">Min</span>
+              <input
+                type="number"
+                min="0"
+                className="input w-full text-[12px] pl-8 text-right"
+                placeholder="0"
+                value={minPrice}
+                onChange={(e) => setMinPrice(e.target.value)}
+              />
+            </div>
+            <div className="w-3 h-px bg-dark-border flex-shrink-0" />
+            <div className="relative flex-1">
+              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-gray-500 font-medium">Max</span>
+              <input
+                type="number"
+                min="0"
+                className="input w-full text-[12px] pl-8 text-right"
+                placeholder="Any"
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* Quick price presets */}
+          <div className="flex flex-wrap gap-1.5 mt-2.5">
+            {[
+              { label: "Under 500", min: "", max: "500" },
+              { label: "500–2K",    min: "500",  max: "2000" },
+              { label: "2K–10K",   min: "2000", max: "10000" },
+              { label: "10K+",     min: "10000", max: "" },
+            ].map((p) => (
+              <button
+                key={p.label}
+                onClick={() => { setMinPrice(p.min); setMaxPrice(p.max); }}
+                className={cn(
+                  "px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all border",
+                  minPrice === p.min && maxPrice === p.max
+                    ? "bg-brand-orange/20 border-brand-orange/40 text-brand-orange"
+                    : "bg-dark-secondary border-dark-border text-gray-400 hover:border-gray-500"
+                )}
+              >{p.label}</button>
+            ))}
+          </div>
+        </FilterSection>
+
+      </div>
+
+      {/* Apply button — sticky at bottom */}
+      <div className="px-4 py-3.5 bg-dark-secondary/40 border-t border-dark-border/60">
+        <button
+          onClick={applyFilters}
+          className="w-full h-10 bg-brand-orange hover:bg-[#e64d00] text-white text-[13px] font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
         >
-          <option value="">Any make</option>
-          {CAR_MAKES.map((m) => <option key={m} value={m}>{m}</option>)}
-        </select>
-      </FilterSection>
-
-      {carMake && (
-        <FilterSection title="Car Model">
-          <input
-            className="input w-full text-[13px]"
-            placeholder="e.g. Land Cruiser"
-            value={carModel}
-            onChange={(e) => setCarModel(e.target.value)}
-          />
-        </FilterSection>
-      )}
-
-      <FilterSection title="Condition">
-        <div className="space-y-2">
-          <label className="flex items-center gap-2.5 cursor-pointer">
-            <input type="radio" name="cond" checked={!condition} onChange={() => setCondition("")} className="accent-brand-orange" />
-            <span className="text-[13px] text-gray-400">Any condition</span>
-          </label>
-          {CONDITIONS.map((c) => (
-            <label key={c.value} className="flex items-center gap-2.5 cursor-pointer">
-              <input type="radio" name="cond" checked={condition === c.value} onChange={() => setCondition(c.value)} className="accent-brand-orange" />
-              <span className={cn("text-[13px]", condition === c.value ? "text-white font-semibold" : "text-gray-400")}>{c.label}</span>
-            </label>
-          ))}
-        </div>
-      </FilterSection>
-
-      <FilterSection title="Price Range (QAR)">
-        <div className="flex gap-2">
-          <input type="number" min="0" className="input flex-1 text-[13px]" placeholder="Min" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} />
-          <input type="number" min="0" className="input flex-1 text-[13px]" placeholder="Max" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} />
-        </div>
-        <button onClick={applyFilters} className="w-full h-9 mt-3 bg-brand-orange text-white text-[13px] font-semibold rounded-lg hover:bg-[#e64d00] transition-colors">
+          <Sparkles size={14} />
           Apply Filters
+          {activeCount > 0 && <span className="w-5 h-5 rounded-full bg-white/20 text-white text-[10px] font-bold flex items-center justify-center">{activeCount}</span>}
         </button>
-      </FilterSection>
+      </div>
+
     </aside>
   );
 
@@ -353,20 +511,32 @@ function SearchContent() {
       <div className="flex gap-6">
 
         {/* Sidebar — desktop */}
-        <div className="w-[218px] flex-shrink-0 hidden lg:block">
-          <Sidebar />
+        <div className="w-[240px] flex-shrink-0 hidden lg:block">
+          <div className="sticky top-4">
+            <Sidebar />
+          </div>
         </div>
 
         {/* Mobile sidebar overlay */}
         {sidebarOpen && (
           <div className="fixed inset-0 z-50 lg:hidden">
-            <div className="absolute inset-0 bg-black/60" onClick={() => setSidebarOpen(false)} />
-            <div className="absolute left-0 top-0 bottom-0 w-[280px] bg-dark-secondary p-5 overflow-y-auto">
-              <div className="flex items-center justify-between mb-4">
-                <span className="font-bold text-white">Filters</span>
-                <button onClick={() => setSidebarOpen(false)}><X size={20} /></button>
+            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
+            <div className="absolute left-0 top-0 bottom-0 w-[300px] bg-dark-primary overflow-y-auto shadow-2xl">
+              <div className="flex items-center justify-between px-4 py-4 border-b border-dark-border sticky top-0 bg-dark-primary z-10">
+                <div className="flex items-center gap-2">
+                  <SlidersHorizontal size={15} className="text-brand-orange" />
+                  <span className="font-bold text-white">Filters</span>
+                  {activeCount > 0 && (
+                    <span className="w-5 h-5 rounded-full bg-brand-orange text-white text-[10px] font-bold flex items-center justify-center">{activeCount}</span>
+                  )}
+                </div>
+                <button onClick={() => setSidebarOpen(false)} className="w-8 h-8 rounded-lg bg-dark-secondary flex items-center justify-center text-gray-400 hover:text-white transition-colors">
+                  <X size={16} />
+                </button>
               </div>
-              <Sidebar />
+              <div className="p-4">
+                <Sidebar />
+              </div>
             </div>
           </div>
         )}

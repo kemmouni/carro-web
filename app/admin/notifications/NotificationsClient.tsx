@@ -147,7 +147,7 @@ export default function NotificationsClient({ users }: { users: User[] }) {
               Link <span className="text-gray-600 normal-case font-normal">(optional — shown as "Open" button in notification)</span>
             </label>
             <input value={link} onChange={(e) => setLink(e.target.value)}
-              placeholder="e.g. /browse or https://carro-web.vercel.app/sale"
+              placeholder="e.g. /browse or https://Warsha+-web.vercel.app/sale"
               className="w-full bg-dark-secondary border border-dark-border rounded-lg px-4 py-2.5 text-[13px] text-white placeholder-gray-500 focus:outline-none focus:border-brand-orange" />
           </div>
 

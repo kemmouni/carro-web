@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Mail, Lock, Car } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/context/LanguageContext";
+import SocialAuthButtons from "@/components/ui/SocialAuthButtons";
 
 function LoginForm() {
   const router = useRouter();
@@ -16,6 +18,7 @@ function LoginForm() {
   const [showPw, setShowPw]     = useState(false);
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState("");
+  const { t, isAr } = useLanguage();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -36,7 +39,10 @@ function LoginForm() {
       }
 
       const role = json.data?.user?.role;
-      const destination = nextPath ?? (role === "SELLER" ? "/dashboard" : "/");
+      const destination = nextPath ?? (
+        role === "ADMIN"   ? "/admin" :
+        role === "SELLER"  ? "/dashboard" : "/"
+      );
       router.push(destination);
       router.refresh();
     } catch {
@@ -57,11 +63,11 @@ function LoginForm() {
               <Car size={20} className="text-white" />
             </div>
             <span className="text-[22px] font-black tracking-tight">
-              Carro<span className="text-brand-orange">.</span>
+              Warsha+<span className="text-brand-orange">.</span>
             </span>
           </Link>
-          <h1 className="text-[26px] font-black text-white">Welcome back</h1>
-          <p className="text-[13px] text-gray-400 mt-1">Sign in to your Carro account</p>
+          <h1 className={`text-[26px] font-black text-white ${isAr ? "font-arabic" : ""}`}>{t("welcomeBack")}</h1>
+          <p className={`text-[13px] text-gray-400 mt-1 ${isAr ? "font-arabic" : ""}`}>{t("signInToAccount")}</p>
         </div>
 
         {/* Card */}
@@ -82,7 +88,7 @@ function LoginForm() {
 
             {/* Email */}
             <div>
-              <label className="block text-[12px] font-semibold text-gray-400 mb-1.5">Email address</label>
+              <label className={`block text-[12px] font-semibold text-gray-400 mb-1.5 ${isAr ? "font-arabic" : ""}`}>{t("emailAddress")}</label>
               <div className="relative">
                 <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
                 <input
@@ -99,9 +105,9 @@ function LoginForm() {
             {/* Password */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-[12px] font-semibold text-gray-400">Password</label>
-                <Link href="/auth/forgot-password" className="text-[12px] text-brand-orange hover:opacity-80 transition-opacity">
-                  Forgot password?
+                <label className={`text-[12px] font-semibold text-gray-400 ${isAr ? "font-arabic" : ""}`}>{t("password")}</label>
+                <Link href="/auth/forgot-password" className={`text-[12px] text-brand-orange hover:opacity-80 transition-opacity ${isAr ? "font-arabic" : ""}`}>
+                  {t("forgotPassword")}
                 </Link>
               </div>
               <div className="relative">
@@ -133,7 +139,7 @@ function LoginForm() {
                 loading && "opacity-60 cursor-not-allowed"
               )}
             >
-              {loading ? "Signing in…" : "Sign In"}
+              {loading ? t("signingIn") : t("signIn")}
             </button>
 
           </form>
@@ -141,32 +147,19 @@ function LoginForm() {
           {/* Divider */}
           <div className="flex items-center gap-3 my-5">
             <div className="flex-1 h-px bg-dark-border" />
-            <span className="text-[11px] text-gray-500">or continue with</span>
+            <span className={`text-[11px] text-gray-500 ${isAr ? "font-arabic" : ""}`}>{t("orContinueWith")}</span>
             <div className="flex-1 h-px bg-dark-border" />
           </div>
 
           {/* Social buttons */}
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { label: "Google", icon: "G" },
-              { label: "Apple",  icon: "" },
-            ].map(({ label, icon }) => (
-              <button
-                key={label}
-                className="h-10 bg-dark-secondary border border-dark-border hover:border-gray-500 rounded-xl text-[13px] font-medium text-white transition-colors flex items-center justify-center gap-2"
-              >
-                <span className="font-bold text-[15px]">{icon || "🍎"}</span>
-                {label}
-              </button>
-            ))}
-          </div>
+          <SocialAuthButtons next={nextPath ?? undefined} mode="signin" />
         </div>
 
         {/* Register link */}
-        <p className="text-center text-[13px] text-gray-500 mt-5">
-          Don&apos;t have an account?{" "}
+        <p className={`text-center text-[13px] text-gray-500 mt-5 ${isAr ? "font-arabic" : ""}`}>
+          {t("noAccount")}{" "}
           <Link href="/auth/register" className="text-brand-orange font-semibold hover:opacity-80 transition-opacity">
-            Create one free
+            {t("createFree")}
           </Link>
         </p>
 

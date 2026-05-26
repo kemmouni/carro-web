@@ -6,6 +6,7 @@ import {
   CheckCircle, XCircle, Star, StarOff, Trash2, Package,
   Search, Eye, ExternalLink, Pencil, X,
 } from "lucide-react";
+import { toast } from "sonner";
 
 interface AdminProduct {
   id: string;
@@ -110,7 +111,7 @@ export default function ProductModerationClient({
         );
         setEditing(null);
       } else {
-        alert(json.error || "Update failed");
+        toast.error(json.error || "Update failed");
       }
     } finally {
       setLoading(null);
@@ -118,7 +119,7 @@ export default function ProductModerationClient({
   }
 
   async function deleteProduct(id: string) {
-    if (!confirm("Delete this product permanently?")) return;
+    if (!window.confirm("Delete this product permanently? This cannot be undone.")) return;
     setLoading(id + "delete");
     try {
       const res = await fetch(`/api/admin/products/${id}`, { method: "DELETE" });
@@ -387,8 +388,8 @@ function EditProductModal({
 
   function submit() {
     const priceNum = Number(price);
-    if (!title.trim()) { alert("Title required"); return; }
-    if (!Number.isFinite(priceNum) || priceNum < 0) { alert("Invalid price"); return; }
+    if (!title.trim()) { toast.error("Title is required"); return; }
+    if (!Number.isFinite(priceNum) || priceNum < 0) { toast.error("Invalid price"); return; }
 
     onSave({
       title: title.trim(),

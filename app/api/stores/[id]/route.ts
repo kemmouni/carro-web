@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin, createSupabaseServerClient } from "@/lib/supabase";
 
 function isUUID(s: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
@@ -56,6 +56,15 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params;
     const body    = await req.json();
+
+    // Auth + ownership check
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+
+    const { data: store } = await supabaseAdmin.from("stores").select("userId").eq("id", id).single();
+    if (!store) return NextResponse.json({ success: false, error: "Store not found" }, { status: 404 });
+    if (store.userId !== user.id) return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
 
     const { data, error } = await supabaseAdmin
       .from("stores")

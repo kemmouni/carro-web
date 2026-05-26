@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight, MapPin, Shield, BadgeCheck, Lock } from "lucide-react";
+import JsonLd, { buildProductSchema } from "@/components/JsonLd";
 import { supabaseAdmin } from "@/lib/supabase";
 import { formatPrice, conditionLabel } from "@/lib/utils";
 import { ProductGallery }        from "@/components/product/ProductGallery";
@@ -39,8 +40,8 @@ async function getProduct(id: string) {
   };
 }
 
-async function getRelated(categoryId: string, productId: string) {
-  const { data } = await supabaseAdmin
+async function getRelated(productId: string, listingType: string | null, categoryId: string | null, carMake: string | null) {
+  let query = supabaseAdmin
     .from("products")
     .select(`
       *,
@@ -48,11 +49,24 @@ async function getRelated(categoryId: string, productId: string) {
       category:categories(id, name, slug),
       store:stores(id, name, slug, city, "isVerified")
     `)
-    .eq("categoryId", categoryId)
     .eq("isActive", true)
+    .eq("approvalStatus", "ACTIVE")
     .neq("id", productId)
     .limit(6);
 
+  if (listingType === "CAR") {
+    // For cars: show related cars, preferably same make
+    query = query.eq("listingType", "CAR");
+    if (carMake) query = query.ilike("carMake", carMake);
+  } else if (listingType === "SERVICE") {
+    query = query.eq("listingType", "SERVICE");
+  } else {
+    // PART (or legacy null): match by category
+    if (categoryId) query = query.eq("categoryId", categoryId);
+    query = query.or('"listingType".eq.PART,"listingType".is.null');
+  }
+
+  const { data } = await query;
   return (data ?? []).map((p: Record<string, unknown>) => ({
     ...p,
     images: ((p.images as Array<{ sortOrder: number }>) ?? []).sort((a, b) => a.sortOrder - b.sortOrder),
@@ -74,11 +88,34 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
   const p     = product as unknown as Product;
   const store = p.store as typeof p.store & { phone?: string };
+  const listingType = (p as unknown as Record<string, unknown>).listingType as string | null ?? null;
+  const isCar     = listingType === "CAR";
+  const isService = listingType === "SERVICE";
+  const isPart    = !isCar && !isService;
 
-  const related = await getRelated(p.categoryId, p.id);
+  const related = await getRelated(
+    p.id,
+    listingType,
+    isPart ? p.categoryId : null,
+    isCar ? ((p as unknown as Record<string,unknown>).carMake as string | null) : null,
+  );
 
   return (
     <div className="max-w-screen-xl mx-auto px-6 py-6 pb-16">
+      <JsonLd data={buildProductSchema({
+        id:          p.id,
+        title:       p.title,
+        description: (p as unknown as Record<string,unknown>).description as string | null,
+        price:       p.price,
+        currency:    p.currency,
+        condition:   p.condition,
+        brand:       (p as unknown as Record<string,unknown>).brand as string | null,
+        imageUrl:    p.images[0]?.url ?? null,
+        storeName:   p.store?.name ?? null,
+        storeSlug:   p.store?.slug ?? null,
+        createdAt:   (p as unknown as Record<string,unknown>).createdAt as string,
+      })} />
+
       <RecentlyViewedTracker
         id={p.id}
         title={p.title}
@@ -91,9 +128,15 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       <nav className="flex items-center gap-1.5 text-[12px] text-gray-500 mb-6">
         <Link href="/" className="hover:text-brand-orange transition-colors">Home</Link>
         <ChevronRight size={12} />
-        <Link href={`/search?category=${p.category?.slug}`} className="hover:text-brand-orange transition-colors">
-          {p.category?.name ?? "Parts"}
-        </Link>
+        {isCar ? (
+          <Link href="/search?type=cars" className="hover:text-brand-orange transition-colors">Cars for Sale</Link>
+        ) : isService ? (
+          <Link href="/search?type=services" className="hover:text-brand-orange transition-colors">Services</Link>
+        ) : (
+          <Link href={`/search?category=${p.category?.slug}`} className="hover:text-brand-orange transition-colors">
+            {p.category?.name ?? "Parts"}
+          </Link>
+        )}
         <ChevronRight size={12} />
         <span className="text-gray-300 truncate max-w-[200px]">{p.title}</span>
       </nav>
@@ -118,9 +161,9 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
               <div className="space-y-0">
                 {([
                   ["Condition",     conditionLabel(p.condition)],
-                  ["Category",      p.category?.name],
-                  ["Part Number",   p.partNumber],
-                  ["Brand",         p.brand],
+                  isPart && ["Category",      p.category?.name],
+                  isPart && ["Part Number",   p.partNumber],
+                  ["Brand",         (p as unknown as Record<string,unknown>).brand as string | undefined],
                   p.carMake && ["Car Make", p.carMake],
                   p.carModel && ["Car Model", p.carModel],
                   (p.carYear || p.carYearTo) && ["Years", `${p.carYear ?? ""}${p.carYearTo && p.carYearTo !== p.carYear ? `–${p.carYearTo}` : ""}`],
@@ -137,7 +180,13 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           {/* Related */}
           {related.length > 0 && (
             <div>
-              <h2 className="section-title mb-4">More in {p.category?.name}</h2>
+              <h2 className="section-title mb-4">
+                {isCar
+                  ? `More ${(p as unknown as Record<string,unknown>).carMake as string ?? ""} Cars`
+                  : isService
+                    ? "More Services"
+                    : `More in ${p.category?.name}`}
+              </h2>
               <div className="flex gap-4 overflow-x-auto no-scrollbar pb-1">
                 {related.map((rp) => (
                   <ProductCard key={(rp as Product).id} product={rp as Product} className="min-w-[180px] w-[180px] flex-shrink-0" />
@@ -161,7 +210,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             storeSlug={store.slug}
             storeName={store.name}
             storePhone={store.phone}
-            listingType={(p as unknown as { listingType?: string }).listingType}
+            listingType={listingType ?? undefined}
           />
 
           <InquiryForm
@@ -191,12 +240,20 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
           {/* Trust badges */}
           <div className="card p-3.5 flex items-center justify-between">
-            {([
+            {(isCar ? [
+              [Shield,     "Verified Seller"],
+              [BadgeCheck, "Inspected"],
+              [Lock,       "Safe Deal"],
+            ] : isService ? [
+              [Shield,     "Verified Provider"],
+              [BadgeCheck, "Trusted Service"],
+              [Lock,       "Safe Deal"],
+            ] : [
               [Shield,     "Genuine OEM"],
               [BadgeCheck, "Quality Checked"],
               [Lock,       "Safe Deal"],
             ] as const).map(([Icon, label]) => (
-              <div key={label} className="flex items-center gap-1.5 text-[11px] text-gray-400">
+              <div key={label as string} className="flex items-center gap-1.5 text-[11px] text-gray-400">
                 <Icon size={13} className="text-green-400" />
                 {label}
               </div>

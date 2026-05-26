@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, Plus, MessageSquare, User } from "lucide-react";
+import { Home, Search, Plus, Heart, User } from "lucide-react";
 
 const TABS = [
-  { label: "Home",     href: "/",                  icon: Home },
-  { label: "Browse",   href: "/browse",             icon: Search },
-  { label: "Post",     href: "/dashboard/products/new", icon: Plus, primary: true },
-  { label: "Messages", href: "/dashboard/messages", icon: MessageSquare },
-  { label: "Profile",  href: "/dashboard",          icon: User },
+  { label: "Home",    href: "/",                       icon: Home },
+  { label: "Search",  href: "/search",                 icon: Search },
+  { label: "Post",    href: "/dashboard/products/new", icon: Plus, primary: true },
+  { label: "Saved",   href: "/wishlist",               icon: Heart },
+  { label: "Profile", href: "/dashboard",              icon: User },
 ];
 
 export default function MobileBottomNav() {

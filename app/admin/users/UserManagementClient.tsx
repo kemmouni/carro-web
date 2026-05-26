@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Users, Search, Shield, ShieldOff, Ban, CheckCircle, Store } from "lucide-react";
+import { toast } from "sonner";
 
 interface AdminUser {
   id: string;
@@ -50,7 +51,7 @@ export default function UserManagementClient({ initialUsers }: { initialUsers: A
       if (json.success) {
         setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, ...json.data } : u)));
       } else {
-        alert(json.error ?? "Failed");
+        toast.error(json.error ?? "Failed");
       }
     } finally {
       setLoading(null);

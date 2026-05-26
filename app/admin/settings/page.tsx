@@ -95,14 +95,14 @@ export default async function AdminSettingsPage() {
             {
               label:       "Vercel Dashboard",
               description: "Deployments, environment variables, domain settings",
-              href:        "https://vercel.com/kemmouni-4504s-projects/carro-web",
+              href:        "https://vercel.com/kemmouni-4504s-projects/Warsha+-web",
               color:       "text-blue-400",
               icon:        Globe,
             },
             {
               label:       "GitHub Repository",
               description: "Source code, branches, pull requests",
-              href:        "https://github.com/kemmouni/carro-web",
+              href:        "https://github.com/kemmouni/Warsha+-web",
               color:       "text-white",
               icon:        Globe,
             },

@@ -15,7 +15,7 @@ export function MobileNotificationBar({ storeName }: { storeName: string }) {
     <div className="md:hidden sticky top-0 z-50 flex items-center justify-between px-4 py-3 bg-dark-secondary border-b border-dark-border">
       {/* Logo / store name */}
       <Link href="/dashboard" className="flex items-center gap-2">
-        <span className="text-[18px] font-black text-brand-orange tracking-tight">CARRO</span>
+        <span className="text-[18px] font-black text-brand-orange tracking-tight">Warsha+</span>
         <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-0.5">
           {storeName}
         </span>

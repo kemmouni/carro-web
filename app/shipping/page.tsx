@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Shipping & Delivery — Carro Qatar",
-  description: "Learn about shipping and delivery options for auto parts on Carro Qatar.",
+  title: "Shipping & Delivery — Warsha+ Qatar",
+  description: "Learn about shipping and delivery options for auto parts on Warsha+ Qatar.",
 };
 
 export default function ShippingPage() {
@@ -13,14 +13,14 @@ export default function ShippingPage() {
 
         <div className="mb-10">
           <h1 className="text-[32px] font-black text-white mb-3">Shipping & Delivery</h1>
-          <p className="text-[15px] text-gray-400">Everything you need to know about how orders are delivered on Carro.</p>
+          <p className="text-[15px] text-gray-400">Everything you need to know about how orders are delivered on Warsha+.</p>
         </div>
 
         <div className="space-y-4">
           <div className="card p-8">
-            <h2 className="text-[18px] font-black text-white mb-3">How delivery works on Carro</h2>
+            <h2 className="text-[18px] font-black text-white mb-3">How delivery works on Warsha+</h2>
             <p className="text-[14px] text-gray-400 leading-relaxed mb-3">
-              Carro is a marketplace connecting buyers with independent sellers. Shipping and delivery arrangements are made directly between the buyer and seller. Each seller sets their own delivery terms, which are shown on their listings.
+              Warsha+ is a marketplace connecting buyers with independent sellers. Shipping and delivery arrangements are made directly between the buyer and seller. Each seller sets their own delivery terms, which are shown on their listings.
             </p>
             <p className="text-[14px] text-gray-400 leading-relaxed">
               We strongly recommend confirming shipping details with the seller via the platform chat or WhatsApp before completing any transaction.

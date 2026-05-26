@@ -1,30 +1,74 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase";
+import { createSupabaseServerClient, supabaseAdmin } from "@/lib/supabase";
 
 /**
- * Auth callback handler — exchanges the PKCE `code` from Supabase email links
- * for a real session (stored in cookies), then redirects to the `next` URL.
+ * Universal auth callback handler.
  *
- * Used by: password-reset email, magic-link email.
- * The redirectTo in the email is: <site>/auth/callback?next=/auth/reset-password
+ * Used by:
+ *   1. Password-reset / magic-link emails  (?next=/auth/reset-password)
+ *   2. OAuth providers (Google)            (?provider=google&next=/)
+ *
+ * Supabase always redirects here with ?code=... after any auth flow.
  */
 export async function GET(req: NextRequest) {
   const { searchParams, origin } = new URL(req.url);
-  const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/";
+  const code     = searchParams.get("code");
+  const next     = searchParams.get("next") ?? "/";
+  const isOAuth  = searchParams.get("provider") !== null || !next.startsWith("/auth/reset");
 
-  if (code) {
-    const supabase = await createSupabaseServerClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-
-    if (!error) {
-      // Redirect to the intended destination (e.g. /auth/reset-password)
-      return NextResponse.redirect(`${origin}${next}`);
-    }
-
-    console.error("[auth/callback] code exchange failed:", error.message);
+  if (!code) {
+    return NextResponse.redirect(`${origin}/auth/login?error=missing_code`);
   }
 
-  // Something went wrong — send to reset-password with an error flag
-  return NextResponse.redirect(`${origin}/auth/reset-password?error=invalid_link`);
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+
+  if (error || !data.session) {
+    console.error("[auth/callback] code exchange failed:", error?.message);
+    // For password-reset flows send to reset page with error; for OAuth send to login
+    const errorDest = next.startsWith("/auth/reset")
+      ? `${origin}/auth/reset-password?error=invalid_link`
+      : `${origin}/auth/login?error=oauth_failed`;
+    return NextResponse.redirect(errorDest);
+  }
+
+  // ── OAuth user provisioning ──────────────────────────────────────────────
+  if (isOAuth) {
+    const authUser = data.session.user;
+
+    // Upsert the user row so OAuth users have a profile immediately
+    const { data: existing } = await supabaseAdmin
+      .from("users")
+      .select("id, role")
+      .eq("id", authUser.id)
+      .maybeSingle();
+
+    if (!existing) {
+      const fullName =
+        authUser.user_metadata?.full_name ??
+        authUser.user_metadata?.name ??
+        authUser.email?.split("@")[0] ??
+        "User";
+
+      await supabaseAdmin.from("users").insert({
+        id:       authUser.id,
+        email:    authUser.email,
+        fullName,
+        role:     "BUYER",
+      });
+    }
+
+    const role = existing?.role ?? "BUYER";
+    const dest =
+      next && next !== "/"
+        ? next
+        : role === "ADMIN"  ? "/admin"
+        : role === "SELLER" ? "/dashboard"
+        : "/";
+
+    return NextResponse.redirect(`${origin}${dest}`);
+  }
+
+  // ── Password-reset / magic-link — redirect to the intended page ──────────
+  return NextResponse.redirect(`${origin}${next}`);
 }

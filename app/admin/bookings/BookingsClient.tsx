@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { Calendar, Search, Phone } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 interface AdminBooking {
   id: string;
@@ -58,7 +59,7 @@ export default function BookingsClient({ initialBookings }: { initialBookings: A
       if (json.success) {
         setBookings((prev) => prev.map((b) => b.id === id ? { ...b, status } : b));
       } else {
-        alert(json.error ?? "Failed");
+        toast.error(json.error ?? "Failed");
       }
     } finally {
       setLoading(null);

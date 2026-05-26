@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — Carro Qatar",
-  description: "Carro platform terms of service for buyers and sellers in Qatar.",
+  title: "Terms of Service — Warsha+ Qatar",
+  description: "Warsha+ platform terms of service for buyers and sellers in Qatar.",
 };
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
@@ -23,11 +23,11 @@ export default function TermsPage() {
 
         <div className="card p-8 space-y-2">
           <Section title="1. Acceptance of Terms">
-            <p>By accessing or using Carro (&ldquo;the Platform&rdquo;), you agree to be bound by these Terms of Service and all applicable laws and regulations of the State of Qatar. If you do not agree with any of these terms, you are prohibited from using this Platform.</p>
+            <p>By accessing or using Warsha+ (&ldquo;the Platform&rdquo;), you agree to be bound by these Terms of Service and all applicable laws and regulations of the State of Qatar. If you do not agree with any of these terms, you are prohibited from using this Platform.</p>
           </Section>
 
           <Section title="2. Platform Description">
-            <p>Carro is an online marketplace connecting buyers and sellers of automotive parts, services, and vehicles in Qatar. We act as an intermediary platform only and are not a party to any transaction between users.</p>
+            <p>Warsha+ is an online marketplace connecting buyers and sellers of automotive parts, services, and vehicles in Qatar. We act as an intermediary platform only and are not a party to any transaction between users.</p>
           </Section>
 
           <Section title="3. User Accounts">
@@ -49,8 +49,8 @@ export default function TermsPage() {
           </Section>
 
           <Section title="5. Buyer Responsibilities">
-            <p>Buyers are responsible for conducting their own due diligence before completing any transaction. Carro does not guarantee the condition, authenticity, or title of any item listed.</p>
-            <p>Buyers should inspect items before purchase when possible. Carro strongly recommends in-person verification for vehicle purchases.</p>
+            <p>Buyers are responsible for conducting their own due diligence before completing any transaction. Warsha+ does not guarantee the condition, authenticity, or title of any item listed.</p>
+            <p>Buyers should inspect items before purchase when possible. Warsha+ strongly recommends in-person verification for vehicle purchases.</p>
           </Section>
 
           <Section title="6. Prohibited Activities">
@@ -66,13 +66,13 @@ export default function TermsPage() {
           </Section>
 
           <Section title="7. Payments and Transactions">
-            <p>Carro facilitates listings but does not process payments directly between buyers and sellers unless a specific payment service is offered. Users transact at their own risk.</p>
-            <p>Cash on Delivery (COD) arrangements are agreements solely between buyers and sellers. Carro bears no liability for failed or disputed COD transactions.</p>
+            <p>Warsha+ facilitates listings but does not process payments directly between buyers and sellers unless a specific payment service is offered. Users transact at their own risk.</p>
+            <p>Cash on Delivery (COD) arrangements are agreements solely between buyers and sellers. Warsha+ bears no liability for failed or disputed COD transactions.</p>
           </Section>
 
           <Section title="8. Content and Intellectual Property">
-            <p>Users retain ownership of content they submit. By submitting content, you grant Carro a worldwide, non-exclusive, royalty-free licence to use, display, and distribute that content for platform operation purposes.</p>
-            <p>Carro&apos;s name, logo, and all platform materials are owned by Carro and may not be used without written permission.</p>
+            <p>Users retain ownership of content they submit. By submitting content, you grant Warsha+ a worldwide, non-exclusive, royalty-free licence to use, display, and distribute that content for platform operation purposes.</p>
+            <p>Warsha+&apos;s name, logo, and all platform materials are owned by Warsha+ and may not be used without written permission.</p>
           </Section>
 
           <Section title="9. Privacy">
@@ -80,11 +80,11 @@ export default function TermsPage() {
           </Section>
 
           <Section title="10. Limitation of Liability">
-            <p>To the maximum extent permitted by Qatari law, Carro shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the Platform or any transactions conducted through it.</p>
+            <p>To the maximum extent permitted by Qatari law, Warsha+ shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the Platform or any transactions conducted through it.</p>
           </Section>
 
           <Section title="11. Termination">
-            <p>Carro reserves the right to suspend or terminate any account at its sole discretion, including for violations of these Terms, without prior notice.</p>
+            <p>Warsha+ reserves the right to suspend or terminate any account at its sole discretion, including for violations of these Terms, without prior notice.</p>
           </Section>
 
           <Section title="12. Governing Law">
@@ -92,11 +92,11 @@ export default function TermsPage() {
           </Section>
 
           <Section title="13. Changes to Terms">
-            <p>Carro may update these Terms at any time. Continued use of the Platform after changes constitutes acceptance of the new Terms. We will notify registered users of material changes by email.</p>
+            <p>Warsha+ may update these Terms at any time. Continued use of the Platform after changes constitutes acceptance of the new Terms. We will notify registered users of material changes by email.</p>
           </Section>
 
           <Section title="14. Contact">
-            <p>For questions about these Terms, contact us at: <a href="mailto:legal@carro.qa" className="text-brand-orange hover:underline">legal@carro.qa</a></p>
+            <p>For questions about these Terms, contact us at: <a href="mailto:legal@warsha.plus" className="text-brand-orange hover:underline">legal@warsha.plus</a></p>
           </Section>
         </div>
       </div>

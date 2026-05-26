@@ -3,8 +3,8 @@ import Link from "next/link";
 import { Search, MessageCircle, ShoppingBag, Store, Upload, Tag } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "How It Works — Carro Qatar",
-  description: "Learn how to buy and sell auto parts on Carro, Qatar's trusted auto parts marketplace.",
+  title: "How It Works — Warsha+ Qatar",
+  description: "Learn how to buy and sell auto parts on Warsha+, Qatar's trusted auto parts marketplace.",
 };
 
 const Step = ({ n, icon: Icon, title, desc }: { n: number; icon: React.ElementType; title: string; desc: string }) => (
@@ -29,7 +29,7 @@ export default function HowItWorksPage() {
 
         <div className="mb-10">
           <h1 className="text-[32px] font-black text-white mb-3">How It Works</h1>
-          <p className="text-[15px] text-gray-400">Carro makes it simple to buy and sell auto parts in Qatar.</p>
+          <p className="text-[15px] text-gray-400">Warsha+ makes it simple to buy and sell auto parts in Qatar.</p>
         </div>
 
         {/* Buyers */}
@@ -57,7 +57,7 @@ export default function HowItWorksPage() {
         <div className="card p-6 bg-brand-orange/5 border-brand-orange/20">
           <h3 className="text-[15px] font-bold text-white mb-1">Free to get started</h3>
           <p className="text-[13px] text-gray-400 mb-4">
-            Listing on Carro is completely free. Upgrade to a Pro or Business plan to unlock featured listings, priority search placement, and advanced analytics.
+            Listing on Warsha+ is completely free. Upgrade to a Pro or Business plan to unlock featured listings, priority search placement, and advanced analytics.
           </p>
           <div className="flex gap-3">
             <Link href="/auth/register" className="px-4 py-2 bg-brand-orange text-white text-[13px] font-bold rounded-xl hover:bg-orange-600 transition-colors">

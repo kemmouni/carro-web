@@ -6,17 +6,12 @@ import { useState, useRef, useEffect } from "react";
 import {
   Search, Heart, User, ChevronDown,
   MapPin, Menu, X, LogOut, Settings, Package,
-  Store, LayoutDashboard, PlusCircle, Bell,
+  Store, LayoutDashboard, PlusCircle, Bell, ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import LanguageSwitcher from "@/components/ui/LanguageSwitcher";
 import { useNotifications } from "@/context/NotificationsContext";
-
-const NAV_LINKS = [
-  { href: "/browse",            label: "Browse"  },
-  { href: "/search",            label: "Search"  },
-  { href: "/deals",             label: "Deals"   },
-];
+import { useLanguage } from "@/context/LanguageContext";
 
 interface SessionUser {
   id:        string;
@@ -31,18 +26,27 @@ interface SessionUser {
 export function Navbar() {
   const router   = useRouter();
   const pathname = usePathname();
-  const [query, setQuery]     = useState("");
+  const { t, isAr } = useLanguage();
+
+  const [query, setQuery]       = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
 
   // Auth state
-  const [user,       setUser]       = useState<SessionUser | null>(null);
+  const [user,        setUser]        = useState<SessionUser | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [notifOpen,   setNotifOpen]   = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Use shared notifications context (polls every 15 s, plays sound on new)
   const { unreadCount, notifications, markAllRead } = useNotifications();
+
+  // Nav links — re-computed when language changes
+  const NAV_LINKS = [
+    { href: "/browse", label: t("browse") },
+    { href: "/search", label: t("search") },
+    { href: "/deals",  label: t("deals")  },
+  ];
 
   useEffect(() => {
     fetch("/api/auth/session")
@@ -79,7 +83,8 @@ export function Navbar() {
   }
 
   const displayName = user?.fullName || user?.email?.split("@")[0] || "Account";
-  const isSeller    = user?.role === "SELLER" || !!user?.storeId;
+  const isSeller = user?.role === "SELLER" || !!user?.storeId;
+  const isAdmin  = user?.role === "ADMIN";
 
   return (
     <header className="sticky top-0 z-50 bg-[#111] border-b border-dark-border">
@@ -87,8 +92,10 @@ export function Navbar() {
 
         {/* Logo */}
         <Link href="/" className="flex-shrink-0 flex flex-col leading-none">
-          <span className="text-2xl font-black text-brand-orange tracking-tight">Carro</span>
-          <span className="text-[8px] tracking-[2px] text-gray-500 uppercase">Auto Parts Marketplace</span>
+          <span className="text-2xl font-black text-brand-orange tracking-tight">Warsha+</span>
+          <span className={`text-[8px] tracking-[2px] text-gray-500 uppercase ${isAr ? "tracking-normal font-arabic" : ""}`}>
+            {t("autoPartsMarket")}
+          </span>
         </Link>
 
         {/* Desktop nav links */}
@@ -99,6 +106,7 @@ export function Navbar() {
               href={l.href}
               className={cn(
                 "text-[13px] font-medium px-3 py-1.5 rounded-lg transition-colors duration-150",
+                isAr && "font-arabic",
                 pathname === l.href
                   ? "text-brand-orange"
                   : "text-gray-300 hover:text-white"
@@ -115,8 +123,9 @@ export function Navbar() {
             ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search parts, brands, categories..."
-            className="input pr-12"
+            placeholder={t("searchParts")}
+            className={`input pr-12 ${isAr ? "font-arabic text-right" : ""}`}
+            dir={isAr ? "rtl" : "ltr"}
           />
           <button
             type="submit"
@@ -133,20 +142,20 @@ export function Navbar() {
           <LanguageSwitcher />
 
           {/* Location */}
-          <button className="hidden md:flex items-center gap-1.5 h-9 px-3 border border-dark-border rounded-lg text-[13px] font-medium text-white hover:border-brand-orange transition-colors">
+          <button className={`hidden md:flex items-center gap-1.5 h-9 px-3 border border-dark-border rounded-lg text-[13px] font-medium text-white hover:border-brand-orange transition-colors ${isAr ? "font-arabic" : ""}`}>
             <MapPin size={13} className="text-brand-orange" />
-            Doha
+            {t("doha")}
             <ChevronDown size={12} className="text-gray-400" />
           </button>
 
-          {/* Sell button — show for buyers/guests */}
-          {!authLoading && !isSeller && (
+          {/* Sell button — show for buyers/guests (not admin) */}
+          {!authLoading && !isSeller && !isAdmin && (
             <Link
               href={user ? "/seller/setup" : "/auth/register"}
-              className="hidden md:flex h-9 px-4 items-center gap-1.5 bg-brand-orange-light border border-brand-orange/40 text-brand-orange text-[13px] font-semibold rounded-lg hover:bg-brand-orange hover:text-white transition-colors"
+              className={`hidden md:flex h-9 px-4 items-center gap-1.5 bg-brand-orange-light border border-brand-orange/40 text-brand-orange text-[13px] font-semibold rounded-lg hover:bg-brand-orange hover:text-white transition-colors ${isAr ? "font-arabic" : ""}`}
             >
               <Store size={14} />
-              Sell
+              {t("sell")}
             </Link>
           )}
 
@@ -154,6 +163,7 @@ export function Navbar() {
           <Link
             href="/wishlist"
             className="relative w-9 h-9 flex items-center justify-center rounded-lg text-gray-300 hover:text-white hover:bg-dark-secondary transition-colors"
+            title={t("wishlist")}
           >
             <Heart size={18} />
           </Link>
@@ -164,6 +174,7 @@ export function Navbar() {
               <button
                 onClick={() => { setNotifOpen(!notifOpen); if (!notifOpen) markNotificationsRead(); }}
                 className="relative w-9 h-9 flex items-center justify-center rounded-lg text-gray-300 hover:text-white hover:bg-dark-secondary transition-colors"
+                title={t("notifications")}
               >
                 <Bell size={18} />
                 {unreadCount > 0 && (
@@ -176,7 +187,7 @@ export function Navbar() {
               {notifOpen && (
                 <div className="absolute right-0 top-full mt-2 w-80 bg-dark-card border border-dark-border rounded-xl shadow-card overflow-hidden animate-fade-in z-50">
                   <div className="px-4 py-3 border-b border-dark-border flex items-center justify-between">
-                    <p className="text-[13px] font-bold text-white">Notifications</p>
+                    <p className={`text-[13px] font-bold text-white ${isAr ? "font-arabic" : ""}`}>{t("notifications")}</p>
                     {unreadCount > 0 && (
                       <span className="text-[11px] text-brand-orange">{unreadCount} new</span>
                     )}
@@ -185,7 +196,7 @@ export function Navbar() {
                     {notifications.length === 0 ? (
                       <div className="py-8 text-center">
                         <Bell size={24} className="text-gray-600 mx-auto mb-2" />
-                        <p className="text-[12px] text-gray-500">No notifications yet</p>
+                        <p className={`text-[12px] text-gray-500 ${isAr ? "font-arabic" : ""}`}>{t("noNotifications")}</p>
                       </div>
                     ) : (
                       notifications.map((n) => (
@@ -240,59 +251,71 @@ export function Navbar() {
                       <>
                         <Link
                           href="/dashboard"
-                          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-gray-300 hover:text-white hover:bg-dark-secondary transition-colors"
+                          className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-gray-300 hover:text-white hover:bg-dark-secondary transition-colors ${isAr ? "font-arabic" : ""}`}
                           onClick={() => setUserOpen(false)}
                         >
-                          <LayoutDashboard size={14} /> Dashboard
+                          <LayoutDashboard size={14} /> {t("dashboard")}
                         </Link>
                         <Link
                           href="/dashboard/products/new"
-                          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-gray-300 hover:text-white hover:bg-dark-secondary transition-colors"
+                          className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-gray-300 hover:text-white hover:bg-dark-secondary transition-colors ${isAr ? "font-arabic" : ""}`}
                           onClick={() => setUserOpen(false)}
                         >
-                          <PlusCircle size={14} /> Add Product
+                          <PlusCircle size={14} /> {t("addProduct")}
                         </Link>
                         {user.storeSlug && (
                           <Link
                             href={`/store/${user.storeSlug}`}
-                            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-gray-300 hover:text-white hover:bg-dark-secondary transition-colors"
+                            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-gray-300 hover:text-white hover:bg-dark-secondary transition-colors ${isAr ? "font-arabic" : ""}`}
                             onClick={() => setUserOpen(false)}
                           >
-                            <Store size={14} /> My Store
+                            <Store size={14} /> {t("myStore")}
                           </Link>
                         )}
                         <div className="border-t border-dark-border my-1.5" />
                       </>
                     )}
-                    {!isSeller && (
+                    {!isSeller && !isAdmin && (
                       <Link
                         href="/seller/setup"
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-brand-orange hover:bg-brand-orange-light transition-colors"
+                        className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-brand-orange hover:bg-brand-orange-light transition-colors ${isAr ? "font-arabic" : ""}`}
                         onClick={() => setUserOpen(false)}
                       >
-                        <Store size={14} /> Become a Seller
+                        <Store size={14} /> {t("becomeSeller")}
                       </Link>
+                    )}
+                    {isAdmin && (
+                      <>
+                        <Link
+                          href="/admin"
+                          className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-brand-orange hover:bg-brand-orange-light transition-colors font-semibold ${isAr ? "font-arabic" : ""}`}
+                          onClick={() => setUserOpen(false)}
+                        >
+                          <ShieldCheck size={14} /> {t("adminPanel")}
+                        </Link>
+                        <div className="border-t border-dark-border my-1.5" />
+                      </>
                     )}
                     <Link
                       href="/wishlist"
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-gray-300 hover:text-white hover:bg-dark-secondary transition-colors"
+                      className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-gray-300 hover:text-white hover:bg-dark-secondary transition-colors ${isAr ? "font-arabic" : ""}`}
                       onClick={() => setUserOpen(false)}
                     >
-                      <Heart size={14} /> Wishlist
+                      <Heart size={14} /> {t("wishlist")}
                     </Link>
                     <Link
                       href="/dashboard/settings"
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-gray-300 hover:text-white hover:bg-dark-secondary transition-colors"
+                      className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-gray-300 hover:text-white hover:bg-dark-secondary transition-colors ${isAr ? "font-arabic" : ""}`}
                       onClick={() => setUserOpen(false)}
                     >
-                      <Settings size={14} /> Settings
+                      <Settings size={14} /> {t("settings")}
                     </Link>
                     <div className="border-t border-dark-border my-1.5" />
                     <button
                       onClick={handleLogout}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-red-400 hover:bg-red-500/10 transition-colors"
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-red-400 hover:bg-red-500/10 transition-colors ${isAr ? "font-arabic" : ""}`}
                     >
-                      <LogOut size={14} /> Sign Out
+                      <LogOut size={14} /> {t("signOut")}
                     </button>
                   </div>
                 </div>
@@ -301,8 +324,8 @@ export function Navbar() {
           ) : !authLoading ? (
             /* Guest auth buttons */
             <div className="hidden sm:flex items-center gap-2">
-              <Link href="/auth/login"    className="h-9 px-4 border border-dark-border rounded-lg text-[13px] font-medium text-white hover:border-brand-orange hover:text-brand-orange transition-colors flex items-center">Sign In</Link>
-              <Link href="/auth/register" className="h-9 px-4 bg-brand-orange rounded-lg text-[13px] font-semibold text-white hover:bg-brand-orange-hover transition-colors flex items-center">Register</Link>
+              <Link href="/auth/login"    className={`h-9 px-4 border border-dark-border rounded-lg text-[13px] font-medium text-white hover:border-brand-orange hover:text-brand-orange transition-colors flex items-center ${isAr ? "font-arabic" : ""}`}>{t("signIn")}</Link>
+              <Link href="/auth/register" className={`h-9 px-4 bg-brand-orange rounded-lg text-[13px] font-semibold text-white hover:bg-brand-orange-hover transition-colors flex items-center ${isAr ? "font-arabic" : ""}`}>{t("register")}</Link>
             </div>
           ) : (
             /* Loading skeleton */
@@ -326,8 +349,8 @@ export function Navbar() {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search parts..."
-              className="input pr-11"
+              placeholder={t("searchParts")}
+              className={`input pr-11 ${isAr ? "font-arabic" : ""}`}
             />
             <button type="submit" className="absolute right-0 top-0 h-11 w-11 flex items-center justify-center bg-brand-orange rounded-r-xl text-white">
               <Search size={15} />
@@ -337,7 +360,7 @@ export function Navbar() {
             <Link
               key={l.href}
               href={l.href}
-              className={cn("text-sm font-medium py-1", pathname === l.href ? "text-brand-orange" : "text-gray-300")}
+              className={cn("text-sm font-medium py-1", isAr && "font-arabic", pathname === l.href ? "text-brand-orange" : "text-gray-300")}
               onClick={() => setMenuOpen(false)}
             >
               {l.label}
@@ -345,15 +368,16 @@ export function Navbar() {
           ))}
           {user ? (
             <>
-              {isSeller && <Link href="/dashboard" className="text-sm font-medium py-1 text-brand-orange" onClick={() => setMenuOpen(false)}><LayoutDashboard size={13} className="inline mr-2" />Dashboard</Link>}
-              {!isSeller && <Link href="/seller/setup" className="text-sm font-medium py-1 text-brand-orange" onClick={() => setMenuOpen(false)}><Store size={13} className="inline mr-2" />Become a Seller</Link>}
-              <Link href="/wishlist" className="text-sm font-medium py-1 text-gray-300" onClick={() => setMenuOpen(false)}><Heart size={13} className="inline mr-2" />Wishlist</Link>
-              <button onClick={handleLogout} className="text-sm font-medium py-1 text-red-400 text-left flex items-center gap-2"><LogOut size={13} />Sign Out</button>
+              {isAdmin   && <Link href="/admin"     className={`text-sm font-medium py-1 text-brand-orange ${isAr ? "font-arabic" : ""}`} onClick={() => setMenuOpen(false)}><ShieldCheck size={13} className="inline mr-2" />{t("adminPanel")}</Link>}
+              {isSeller  && <Link href="/dashboard" className={`text-sm font-medium py-1 text-brand-orange ${isAr ? "font-arabic" : ""}`} onClick={() => setMenuOpen(false)}><LayoutDashboard size={13} className="inline mr-2" />{t("dashboard")}</Link>}
+              {!isSeller && !isAdmin && <Link href="/seller/setup" className={`text-sm font-medium py-1 text-brand-orange ${isAr ? "font-arabic" : ""}`} onClick={() => setMenuOpen(false)}><Store size={13} className="inline mr-2" />{t("becomeSeller")}</Link>}
+              <Link href="/wishlist" className={`text-sm font-medium py-1 text-gray-300 ${isAr ? "font-arabic" : ""}`} onClick={() => setMenuOpen(false)}><Heart size={13} className="inline mr-2" />{t("wishlist")}</Link>
+              <button onClick={handleLogout} className={`text-sm font-medium py-1 text-red-400 text-left flex items-center gap-2 ${isAr ? "font-arabic" : ""}`}><LogOut size={13} />{t("signOut")}</button>
             </>
           ) : (
             <div className="flex gap-2 pt-2 border-t border-dark-border">
-              <Link href="/auth/login"    className="flex-1 h-9 border border-dark-border rounded-lg text-[13px] font-medium text-white flex items-center justify-center" onClick={() => setMenuOpen(false)}>Sign In</Link>
-              <Link href="/auth/register" className="flex-1 h-9 bg-brand-orange rounded-lg text-[13px] font-semibold text-white flex items-center justify-center" onClick={() => setMenuOpen(false)}>Register</Link>
+              <Link href="/auth/login"    className={`flex-1 h-9 border border-dark-border rounded-lg text-[13px] font-medium text-white flex items-center justify-center ${isAr ? "font-arabic" : ""}`} onClick={() => setMenuOpen(false)}>{t("signIn")}</Link>
+              <Link href="/auth/register" className={`flex-1 h-9 bg-brand-orange rounded-lg text-[13px] font-semibold text-white flex items-center justify-center ${isAr ? "font-arabic" : ""}`} onClick={() => setMenuOpen(false)}>{t("register")}</Link>
             </div>
           )}
         </div>

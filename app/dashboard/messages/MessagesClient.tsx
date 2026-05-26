@@ -219,7 +219,7 @@ export default function MessagesClient({ initialMessages }: { initialMessages: M
           <p className="font-semibold text-brand-orange mb-1.5">Reply to this inquiry</p>
           {selected.fromEmail ? (
             <a
-              href={`mailto:${selected.fromEmail}?subject=Re: ${selected.product?.title ?? "Your inquiry on Carro"}`}
+              href={`mailto:${selected.fromEmail}?subject=Re: ${selected.product?.title ?? "Your inquiry on Warsha+"}`}
               className="inline-flex items-center gap-2 bg-dark-secondary border border-dark-border rounded-lg px-4 py-2.5 text-white hover:border-brand-orange transition-colors font-medium"
             >
               <Mail size={14} className="text-brand-orange" />

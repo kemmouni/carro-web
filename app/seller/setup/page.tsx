@@ -63,7 +63,7 @@ export default function SellerSetupPage() {
             <Store size={28} className="text-brand-orange" />
           </div>
           <h1 className="text-3xl font-black text-white mb-2">Create Your Store</h1>
-          <p className="text-gray-400 text-sm">Set up your seller profile to start listing auto parts on Carro.</p>
+          <p className="text-gray-400 text-sm">Set up your seller profile to start listing auto parts on Warsha+.</p>
         </div>
 
         {/* Benefits */}

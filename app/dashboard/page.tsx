@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import {
   Package, Eye, ShoppingBag, Star,
   TrendingUp, TrendingDown, ArrowUpRight,
+  CheckCircle2, Circle, Rocket,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -56,6 +57,45 @@ export default async function DashboardPage() {
           + Add Product
         </Link>
       </div>
+
+      {/* ── Getting Started checklist (new sellers only) ── */}
+      {stats.totalProducts === 0 && (
+        <div className="mb-8 rounded-2xl bg-gradient-to-r from-brand-orange/10 to-dark-card border border-brand-orange/25 p-6">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-10 h-10 rounded-xl bg-brand-orange/20 flex items-center justify-center flex-shrink-0">
+              <Rocket size={18} className="text-brand-orange" />
+            </div>
+            <div>
+              <h2 className="text-[16px] font-black text-white">Welcome to Warsha+! Let&apos;s get you set up 🎉</h2>
+              <p className="text-[12px] text-gray-400 mt-0.5">Complete these steps to start receiving buyers.</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              { done: true,  step: "1", label: "Create your account",    sub: "Done!",                          href: null },
+              { done: !!store.isVerified, step: "2", label: "Complete your store profile", sub: "Add logo, description & phone", href: "/dashboard/store" },
+              { done: false, step: "3", label: "Post your first listing", sub: "Takes less than 2 minutes",      href: "/dashboard/products/new" },
+            ].map((s) => (
+              <div key={s.step} className={`flex items-start gap-3 p-4 rounded-xl border transition-all ${s.done ? "bg-green-500/10 border-green-500/20" : "bg-dark-secondary border-dark-border hover:border-brand-orange"}`}>
+                <div className="mt-0.5 flex-shrink-0">
+                  {s.done
+                    ? <CheckCircle2 size={18} className="text-green-400" />
+                    : <Circle size={18} className="text-gray-500" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-[13px] font-bold ${s.done ? "text-green-400 line-through opacity-60" : "text-white"}`}>{s.label}</p>
+                  <p className="text-[11px] text-gray-500 mt-0.5">{s.sub}</p>
+                  {!s.done && s.href && (
+                    <Link href={s.href} className="mt-2 inline-flex items-center gap-1 text-[12px] text-brand-orange font-semibold hover:opacity-80">
+                      {s.step === "3" ? "Add listing →" : "Complete →"}
+                    </Link>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

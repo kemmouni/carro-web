@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Mail, MessageCircle, MapPin, Clock } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Contact Us — Carro Qatar",
-  description: "Get in touch with the Carro team. We're here to help with any questions about buying or selling auto parts in Qatar.",
+  title: "Contact Us — Warsha+ Qatar",
+  description: "Get in touch with the Warsha+ team. We're here to help with any questions about buying or selling auto parts in Qatar.",
 };
 
 export default function ContactPage() {
@@ -30,8 +30,8 @@ export default function ContactPage() {
               icon: Mail,
               title: "Email",
               desc: "For detailed enquiries, partnerships, or seller support.",
-              action: "support@carro.qa",
-              href: "mailto:support@carro.qa",
+              action: "support@warsha.plus",
+              href: "mailto:support@warsha.plus",
               color: "text-brand-orange",
             },
             {
@@ -68,13 +68,13 @@ export default function ContactPage() {
           <h2 className="text-[18px] font-black text-white mb-1">For Sellers</h2>
           <p className="text-[13px] text-gray-400 mb-4">
             Need help with your store, listings, or subscription? Email us at{" "}
-            <a href="mailto:sellers@carro.qa" className="text-brand-orange hover:underline">sellers@carro.qa</a>{" "}
+            <a href="mailto:sellers@warsha.plus" className="text-brand-orange hover:underline">sellers@warsha.plus</a>{" "}
             or reach us on WhatsApp — we'll get back to you quickly.
           </p>
           <h2 className="text-[18px] font-black text-white mb-1 mt-6">Report a Problem</h2>
           <p className="text-[13px] text-gray-400">
             Found a fraudulent listing or safety issue? Use the "Report" button on any listing, or email{" "}
-            <a href="mailto:trust@carro.qa" className="text-brand-orange hover:underline">trust@carro.qa</a>.
+            <a href="mailto:trust@warsha.plus" className="text-brand-orange hover:underline">trust@warsha.plus</a>.
           </p>
         </div>
 

@@ -30,7 +30,7 @@ export default function ReferralPage() {
     });
   }
 
-  const referralLink = data ? `${typeof window !== "undefined" ? window.location.origin : "https://carro.qa"}/signup?ref=${data.code}` : "";
+  const referralLink = data ? `${typeof window !== "undefined" ? window.location.origin : "https://warsha.plus"}/signup?ref=${data.code}` : "";
 
   if (loading) {
     return (
@@ -59,7 +59,7 @@ export default function ReferralPage() {
         <div className="grid grid-cols-3 gap-4">
           {[
             { icon: Gift,         step: "1", label: "Share your link",     desc: "Send your unique referral link to friends" },
-            { icon: Users,        step: "2", label: "They sign up",        desc: "Friend creates a seller account on Carro" },
+            { icon: Users,        step: "2", label: "They sign up",        desc: "Friend creates a seller account on Warsha+" },
             { icon: Star,         step: "3", label: "You earn a reward",   desc: "Get 1 free featured listing slot added" },
           ].map(({ icon: Icon, step, label, desc }) => (
             <div key={step} className="text-center">

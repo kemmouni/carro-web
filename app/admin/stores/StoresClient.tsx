@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   Store, Search, CheckCircle, XCircle, ExternalLink, Trash2, ShieldCheck,
 } from "lucide-react";
+import { toast } from "sonner";
 
 interface AdminStore {
   id: string;
@@ -52,7 +53,7 @@ export default function StoresClient({ initialStores }: { initialStores: AdminSt
       if (json.success) {
         setStores((prev) => prev.map((s) => s.id === id ? { ...s, ...json.data } : s));
       } else {
-        alert(json.error ?? "Failed");
+        toast.error(json.error ?? "Failed");
       }
     } finally {
       setLoading(null);
@@ -68,7 +69,7 @@ export default function StoresClient({ initialStores }: { initialStores: AdminSt
       if (json.success) {
         setStores((prev) => prev.filter((s) => s.id !== id));
       } else {
-        alert(json.error ?? "Failed");
+        toast.error(json.error ?? "Failed");
       }
     } finally {
       setLoading(null);

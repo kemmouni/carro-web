@@ -20,10 +20,10 @@ async function main() {
 
   // ── Users ─────────────────────────────────────────────────
   const seller1 = await prisma.user.upsert({
-    where: { email: "seller1@carro.qa" },
+    where: { email: "seller1@warsha.plus" },
     update: {},
     create: {
-      email: "seller1@carro.qa",
+      email: "seller1@warsha.plus",
       name: "Mohammed Al-Rashid",
       role: UserRole.SELLER,
       phone: "+974 5555 1001",
@@ -31,10 +31,10 @@ async function main() {
   });
 
   const seller2 = await prisma.user.upsert({
-    where: { email: "seller2@carro.qa" },
+    where: { email: "seller2@warsha.plus" },
     update: {},
     create: {
-      email: "seller2@carro.qa",
+      email: "seller2@warsha.plus",
       name: "Ahmed Hassan",
       role: UserRole.SELLER,
       phone: "+974 5555 1002",
@@ -42,10 +42,10 @@ async function main() {
   });
 
   const buyer1 = await prisma.user.upsert({
-    where: { email: "buyer1@carro.qa" },
+    where: { email: "buyer1@warsha.plus" },
     update: {},
     create: {
-      email: "buyer1@carro.qa",
+      email: "buyer1@warsha.plus",
       name: "Khalid Al-Thani",
       role: UserRole.BUYER,
       phone: "+974 5555 2001",

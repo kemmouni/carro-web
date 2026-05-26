@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin, createSupabaseServerClient } from "@/lib/supabase";
 
 export async function GET(req: NextRequest) {
   try {
@@ -62,8 +62,8 @@ export async function GET(req: NextRequest) {
     if (service) query = query.eq("brand", service);
     if (body)    query = query.eq("brand", body);
 
-    // Filter by category slug
-    if (category) {
+    // Filter by category slug — only meaningful for PART listings
+    if (category && (type === "PART" || type === null)) {
       const { data: cat } = await supabaseAdmin
         .from("categories").select("id").eq("slug", category).single();
       if (cat) query = query.eq("categoryId", cat.id);
@@ -98,6 +98,16 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+
+    // Auth + ownership: verify the storeId belongs to the caller
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+
+    const { data: store } = await supabaseAdmin.from("stores").select("userId").eq("id", body.storeId).single();
+    if (!store) return NextResponse.json({ success: false, error: "Store not found" }, { status: 404 });
+    if (store.userId !== user.id) return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+
     const slug = body.slug ?? body.title.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
 
     const { data: product, error } = await supabaseAdmin

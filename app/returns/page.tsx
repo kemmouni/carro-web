@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Returns & Refunds — Carro Qatar",
-  description: "Understand the returns and refunds policy for purchases on Carro Qatar.",
+  title: "Returns & Refunds — Warsha+ Qatar",
+  description: "Understand the returns and refunds policy for purchases on Warsha+ Qatar.",
 };
 
 export default function ReturnsPage() {
@@ -20,7 +20,7 @@ export default function ReturnsPage() {
           <div className="card p-8">
             <h2 className="text-[18px] font-black text-white mb-3">Seller-managed returns</h2>
             <p className="text-[14px] text-gray-400 leading-relaxed mb-3">
-              Carro is a marketplace platform. Returns and refunds are handled directly between the buyer and seller. Each seller may have their own returns policy, which should be confirmed before purchasing.
+              Warsha+ is a marketplace platform. Returns and refunds are handled directly between the buyer and seller. Each seller may have their own returns policy, which should be confirmed before purchasing.
             </p>
             <p className="text-[14px] text-gray-400 leading-relaxed">
               We encourage all buyers to carefully review listing descriptions, photos, and condition notes before making a purchase, and to ask the seller any questions in advance.
@@ -32,9 +32,9 @@ export default function ReturnsPage() {
             <div className="space-y-4">
               {[
                 { title: "Wrong part received", desc: "Contact the seller immediately via platform message or WhatsApp. Provide photos showing the issue. Most sellers will offer an exchange or refund." },
-                { title: "Part not as described", desc: "If the part's condition or specifications differ significantly from the listing, raise the issue with the seller. If unresolved, contact Carro support." },
+                { title: "Part not as described", desc: "If the part's condition or specifications differ significantly from the listing, raise the issue with the seller. If unresolved, contact Warsha+ support." },
                 { title: "Damaged on delivery", desc: "Inspect parts before signing for any courier delivery. Document damage with photos and contact the seller within 24 hours of receipt." },
-                { title: "Seller dispute", desc: "If you cannot reach a resolution with the seller, contact us at trust@carro.qa. We will review the case and work with both parties to find a fair outcome." },
+                { title: "Seller dispute", desc: "If you cannot reach a resolution with the seller, contact us at trust@warsha.plus. We will review the case and work with both parties to find a fair outcome." },
               ].map(({ title, desc }) => (
                 <div key={title} className="flex gap-3">
                   <span className="w-1.5 h-1.5 rounded-full bg-brand-orange mt-2 flex-shrink-0" />
@@ -54,7 +54,7 @@ export default function ReturnsPage() {
               <li className="flex gap-2"><span className="text-brand-orange">✓</span> Confirm compatibility with your vehicle before purchasing.</li>
               <li className="flex gap-2"><span className="text-brand-orange">✓</span> Ask for photos of the actual part — not just stock images.</li>
               <li className="flex gap-2"><span className="text-brand-orange">✓</span> Clarify the seller's return policy before completing the transaction.</li>
-              <li className="flex gap-2"><span className="text-brand-orange">✓</span> Keep a record of all communication through the Carro platform.</li>
+              <li className="flex gap-2"><span className="text-brand-orange">✓</span> Keep a record of all communication through the Warsha+ platform.</li>
             </ul>
           </div>
 

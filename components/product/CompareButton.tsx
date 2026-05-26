@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { GitCompareArrows, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 const COMPARE_KEY = "carro_compare";
 const MAX_COMPARE = 3;
@@ -36,19 +37,25 @@ export default function CompareButton({ productId }: { productId: string }) {
     const ids = getCompareIds();
     if (inList) {
       setCompareIds(ids.filter((id) => id !== productId));
+      toast.success("Removed from compare");
     } else {
       if (ids.length >= MAX_COMPARE) {
-        alert(`You can compare up to ${MAX_COMPARE} products at once. Remove one first.`);
+        toast.error(`You can compare up to ${MAX_COMPARE} products at once. Remove one first.`);
         return;
       }
       const next = [...ids, productId];
       setCompareIds(next);
       if (next.length >= 2) {
-        // prompt to go compare
-        if (confirm(`${next.length} products added. Go to compare page?`)) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          router.push(`/compare?ids=${next.join(",")}` as any);
-        }
+        toast.success(`${next.length} products selected`, {
+          description: "Ready to compare side by side",
+          action: {
+            label: "Compare now",
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            onClick: () => router.push(`/compare?ids=${next.join(",")}` as any),
+          },
+        });
+      } else {
+        toast.success("Added to compare");
       }
     }
   }

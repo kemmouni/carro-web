@@ -13,7 +13,18 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   html { scroll-behavior: smooth; }
-  html[lang="ar"] { font-family: 'Noto Sans Arabic', 'Inter', sans-serif; }
+
+  /* Cairo covers Arabic + Latin — activate it when Arabic is selected */
+  html[lang="ar"],
+  html.font-arabic {
+    font-family: var(--font-cairo), "Cairo", system-ui, sans-serif;
+    letter-spacing: 0;        /* Arabic doesn't use letter-spacing */
+  }
+
+  /* RTL-specific body adjustments */
+  html[lang="ar"] body {
+    text-align: start;        /* natural for both LTR and RTL */
+  }
 
   body {
     @apply bg-dark-primary text-white font-sans antialiased;

@@ -153,7 +153,7 @@ export function StoreContent({ store, products }: Props) {
   function buildWhatsApp() {
     if (!store.phone) return "#";
     const digits  = store.phone.replace(/\D/g, "");
-    const message = encodeURIComponent(`Hi, I visited your store on Carro and I'm interested in your parts.`);
+    const message = encodeURIComponent(`Hi, I visited your store on Warsha+ and I'm interested in your parts.`);
     return `https://wa.me/${digits}?text=${message}`;
   }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { Check, Zap, Star, Building2 } from "lucide-react";
+import { toast } from "sonner";
 
 const PLANS = [
   {
@@ -62,7 +63,7 @@ export default function SubscriptionsPage() {
     <div className="p-6 max-w-4xl mx-auto">
       <div className="text-center mb-8">
         <h1 className="text-[26px] font-black text-white mb-2">Choose Your Plan</h1>
-        <p className="text-gray-400 text-[14px]">Scale your business on Carro with the right tools</p>
+        <p className="text-gray-400 text-[14px]">Scale your business on Warsha+ with the right tools</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -110,7 +111,10 @@ export default function SubscriptionsPage() {
                 className={`w-full h-11 rounded-xl font-bold text-[13px] transition-colors ${plan.ctaCls}`}
                 onClick={() => {
                   if (plan.slug !== "starter") {
-                    alert("Payment integration coming soon! Contact support@carro.qa to upgrade manually.");
+                    toast.info("Payment integration coming soon!", {
+                      description: "Contact support@warsha.plus to upgrade manually.",
+                      duration: 6000,
+                    });
                   }
                 }}
               >
@@ -123,7 +127,7 @@ export default function SubscriptionsPage() {
 
       <p className="text-center text-[12px] text-gray-600 mt-6">
         All plans include free listing creation. Featured slot pricing is QAR 15/week per slot.
-        Contact <span className="text-brand-orange">support@carro.qa</span> for enterprise pricing.
+        Contact <span className="text-brand-orange">support@warsha.plus</span> for enterprise pricing.
       </p>
     </div>
   );

@@ -24,7 +24,9 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
+        sans:   ["var(--font-inter)", "Inter", "system-ui", "sans-serif"],
+        arabic: ["var(--font-cairo)", "Cairo", "system-ui", "sans-serif"],
+        cairo:  ["var(--font-cairo)", "Cairo", "system-ui", "sans-serif"],
       },
       borderRadius: {
         "2xl": "16px",
@@ -45,7 +47,11 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    // Enable rtl: variant (e.g. rtl:text-right, rtl:flex-row-reverse)
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require("tailwindcss-rtl"),
+  ],
 };
 
 export default config;

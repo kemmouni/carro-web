@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase";
 import { supabaseAdmin } from "@/lib/supabase";
 import AdminSidebar from "./AdminSidebar";
 
-export const metadata = { title: "Admin Panel — Carro" };
+export const metadata = { title: "Admin Panel — Warsha+" };
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createSupabaseServerClient();

@@ -48,7 +48,7 @@ export default function ForgotPasswordPage() {
               <Car size={20} className="text-white" />
             </div>
             <span className="text-[22px] font-black tracking-tight">
-              Carro<span className="text-brand-orange">.</span>
+              Warsha+<span className="text-brand-orange">.</span>
             </span>
           </Link>
           <h1 className="text-[26px] font-black text-white">Reset password</h1>

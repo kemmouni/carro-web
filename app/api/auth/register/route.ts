@@ -53,18 +53,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Failed to create user profile" }, { status: 500 });
     }
 
-    // 3. If seller, create a store
+    // 3. If seller, create a store (retry once on slug collision)
     if (isSeller) {
-      const slug = `${toSlug(name)}-${Math.random().toString(36).slice(2, 6)}`;
-      const { error: storeError } = await supabaseAdmin.from("stores").insert({
-        id:      crypto.randomUUID(),
-        userId,
-        name,
-        slug,
-        city:    "Doha",
-        country: "Qatar",
-      });
-      if (storeError) console.error("[register] store insert error:", storeError);
+      const makeSlug = () => `${toSlug(name)}-${Math.random().toString(36).slice(2, 7)}`;
+      let storeError = null;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const { error } = await supabaseAdmin.from("stores").insert({
+          id:      crypto.randomUUID(),
+          userId,
+          name,
+          slug:    makeSlug(),
+          city:    "Doha",
+          country: "Qatar",
+        });
+        storeError = error;
+        if (!error) break;
+      }
+      if (storeError) {
+        console.error("[register] store insert error:", storeError);
+        // Clean up auth user and profile so there's no orphan seller without a store
+        await supabaseAdmin.auth.admin.deleteUser(userId);
+        return NextResponse.json({ success: false, error: "Failed to create your store. Please try again." }, { status: 500 });
+      }
     }
 
     // 4. Auto sign-in so the user doesn't need to log in separately

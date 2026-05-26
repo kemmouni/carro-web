@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import Image from "next/image";
 import { ShoppingBag, Search, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 interface OrderItem {
   id: string;
@@ -72,7 +73,7 @@ export default function OrdersClient({ initialOrders }: { initialOrders: AdminOr
       if (json.success) {
         setOrders((prev) => prev.map((o) => o.id === id ? { ...o, status } : o));
       } else {
-        alert(json.error ?? "Failed");
+        toast.error(json.error ?? "Failed");
       }
     } finally {
       setLoading(null);

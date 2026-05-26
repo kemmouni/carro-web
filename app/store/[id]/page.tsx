@@ -103,6 +103,6 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (!result) return { title: "Store Not Found" };
   return {
     title: `${result.name} — Auto Parts Store in Qatar`,
-    description: result.description ?? `Browse ${result._count.products} listings from ${result.name} on Carro.`,
+    description: result.description ?? `Browse ${result._count.products} listings from ${result.name} on Warsha+.`,
   };
 }

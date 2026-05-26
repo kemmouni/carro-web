@@ -31,7 +31,7 @@ export default function AdminSidebar({ adminName }: { adminName: string }) {
       {/* Logo */}
       <div className="px-5 py-5 border-b border-dark-border">
         <span className="text-lg font-black tracking-tight">
-          <span className="text-brand-orange">CARRO</span>
+          <span className="text-brand-orange">Warsha+</span>
           <span className="text-white text-xs font-medium ml-1.5 bg-brand-orange/20 text-brand-orange px-1.5 py-0.5 rounded">ADMIN</span>
         </span>
       </div>
