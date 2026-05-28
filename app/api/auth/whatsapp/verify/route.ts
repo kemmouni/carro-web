@@ -1,50 +1,48 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createHmac, timingSafeEqual } from "crypto";
 import { supabaseAdmin } from "@/lib/supabase";
 
-const ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID!;
-const AUTH_TOKEN  = process.env.TWILIO_AUTH_TOKEN!;
-const VERIFY_SID  = process.env.TWILIO_VERIFY_SID!;
+const HMAC_SECRET = process.env.OTP_HMAC_SECRET ?? "warsha-otp-default-secret-change-me";
+
+function checkHmac(phone: string, otp: string, windowTs: string, token: string): boolean {
+  try {
+    const expected = createHmac("sha256", HMAC_SECRET)
+      .update(`${phone}:${otp}:${windowTs}`)
+      .digest("base64");
+    return timingSafeEqual(Buffer.from(expected), Buffer.from(token));
+  } catch {
+    return false;
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
-    const { phone, token } = await req.json();
-    if (!phone || !token) {
+    const { phone, token, otp_token } = await req.json();
+    if (!phone || !token || !otp_token) {
       return NextResponse.json(
-        { success: false, error: "Phone and token required" },
+        { success: false, error: "phone, token, and otp_token are required" },
         { status: 400 }
       );
     }
 
-    // ── 1. Verify the OTP with Twilio ────────────────────────────────────────
-    const credentials = Buffer.from(`${ACCOUNT_SID}:${AUTH_TOKEN}`).toString("base64");
+    // ── 1. Verify HMAC (current + previous 10-min window for clock skew) ─────
+    const nowWindow  = Math.floor(Date.now() / 600000).toString();
+    const prevWindow = (Math.floor(Date.now() / 600000) - 1).toString();
 
-    const twilioRes = await fetch(
-      `https://verify.twilio.com/v2/Services/${VERIFY_SID}/VerificationChecks`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Basic ${credentials}`,
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({ To: phone, Code: token }),
-      }
-    );
+    const valid =
+      checkHmac(phone, token, nowWindow,  otp_token) ||
+      checkHmac(phone, token, prevWindow, otp_token);
 
-    const twilioData = await twilioRes.json();
-
-    if (!twilioRes.ok || twilioData.status !== "approved") {
+    if (!valid) {
       return NextResponse.json(
         { success: false, error: "Invalid or expired code. Please try again." },
         { status: 400 }
       );
     }
 
-    // ── 2. Resolve or create the Supabase user ───────────────────────────────
-    // Use a virtual email so the user has a stable Supabase identity.
-    const digits       = phone.replace(/\D/g, "");
-    const virtualEmail = `${digits}@wa.warsha.plus`;
+    // ── 2. Resolve or create Supabase user ────────────────────────────────────
+    const virtualEmail = `${phone.replace(/\D/g, "")}@wa.warsha.plus`;
 
-    // Try to create – ignore "already registered" error
     await supabaseAdmin.auth.admin.createUser({
       email:         virtualEmail,
       phone,
@@ -53,9 +51,9 @@ export async function POST(req: NextRequest) {
       user_metadata: { phone, auth_method: "whatsapp_otp" },
     });
 
-    // Ensure the user row exists in the public.users table
-    const { data: authUser } = await supabaseAdmin.auth.admin.listUsers();
-    const supaUser = authUser?.users?.find((u) => u.email === virtualEmail);
+    // Ensure public.users row exists
+    const { data: authList } = await supabaseAdmin.auth.admin.listUsers();
+    const supaUser = authList?.users?.find((u) => u.email === virtualEmail);
     if (supaUser) {
       const { data: existing } = await supabaseAdmin
         .from("users")
@@ -73,7 +71,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // ── 3. Generate a magic-link token so the client can sign in ─────────────
+    // ── 3. Generate magic-link token_hash ─────────────────────────────────────
     const { data: linkData, error: linkError } =
       await supabaseAdmin.auth.admin.generateLink({
         type:  "magiclink",

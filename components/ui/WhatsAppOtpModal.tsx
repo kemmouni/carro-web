@@ -23,13 +23,14 @@ type Step = "phone" | "otp";
 export default function WhatsAppOtpModal({ onClose, next }: Props) {
   const router = useRouter();
 
-  const [step, setStep]         = useState<Step>("phone");
-  const [phone, setPhone]       = useState("");
-  const [digits, setDigits]     = useState(["", "", "", "", "", ""]);
-  const [loading, setLoading]   = useState(false);
+  const [step, setStep]           = useState<Step>("phone");
+  const [phone, setPhone]         = useState("");
+  const [digits, setDigits]       = useState(["", "", "", "", "", ""]);
+  const [loading, setLoading]     = useState(false);
   const [resending, setResending] = useState(false);
-  const [error, setError]       = useState("");
+  const [error, setError]         = useState("");
   const [countdown, setCountdown] = useState(60);
+  const [otpToken, setOtpToken]   = useState("");
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -86,6 +87,7 @@ export default function WhatsAppOtpModal({ onClose, next }: Props) {
         setError(json.error ?? "Failed to send OTP");
         return;
       }
+      setOtpToken(json.otp_token ?? "");
       setStep("otp");
     } catch {
       setError("Something went wrong. Please try again.");
@@ -109,6 +111,7 @@ export default function WhatsAppOtpModal({ onClose, next }: Props) {
         setError(json.error ?? "Failed to resend OTP");
         return;
       }
+      setOtpToken(json.otp_token ?? "");
       setDigits(["", "", "", "", "", ""]);
       setCountdown(60);
       setTimeout(() => inputRefs.current[0]?.focus(), 100);
@@ -129,7 +132,7 @@ export default function WhatsAppOtpModal({ onClose, next }: Props) {
       const res  = await fetch("/api/auth/whatsapp/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: getFullPhone(), token: otp }),
+        body: JSON.stringify({ phone: getFullPhone(), token: otp, otp_token: otpToken }),
       });
       const json = await res.json();
 
