@@ -144,7 +144,7 @@ export default function WhatsAppOtpModal({ onClose, next }: Props) {
       const supabase = getSupabase();
       const { error: authError } = await supabase.auth.verifyOtp({
         token_hash: json.token_hash,
-        type:       "email",
+        type:       "magiclink",
       });
 
       if (authError) {
